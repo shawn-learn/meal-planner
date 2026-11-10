@@ -23,6 +23,45 @@ def _date(s: str | None) -> _dt.date | None:
     return _dt.date.fromisoformat(s) if s else None
 
 
+def _listening(host: str, port: int) -> bool:
+    """True when something accepts connections on host:port (a running `meals serve`)."""
+    import socket
+
+    try:
+        with socket.create_connection((host, port), timeout=1):
+            return True
+    except OSError:
+        return False
+
+
+def _pid_alive(pid: int) -> bool:
+    if sys.platform == "win32":
+        import ctypes
+
+        kernel32: Any = getattr(ctypes, "windll").kernel32  # noqa: B009 (Windows-only attribute)
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        code = ctypes.c_ulong()
+        kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+        kernel32.CloseHandle(handle)
+        return code.value == 259  # STILL_ACTIVE
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _read_pid(path: Any) -> int | None:
+    try:
+        return int(path.read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return None
+
+
 def main(argv: list[str] | None = None) -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -63,6 +102,7 @@ def main(argv: list[str] | None = None) -> None:
     k.add_argument("--dry-run", action="store_true")
 
     sub.add_parser("stop", help="Stop a running `meals serve`")
+    sub.add_parser("status", help="Say whether `meals serve` is running")
     sub.add_parser("mcp", help="Run the MCP server on stdio (for Claude)")
     sub.add_parser("demo", help="Try it with a made-up household on port 8201")
 
@@ -75,26 +115,63 @@ def main(argv: list[str] | None = None) -> None:
         from meals.config import get_settings
 
         st = get_settings()
+        host, port = a.host or st.host, a.port or st.port
+        if _listening(host, port):
+            # Already running (start.bat run twice): leave it, and its PID file, alone.
+            print(f"Already running on http://{host}:{port}/")
+            return
         st.data_dir.mkdir(parents=True, exist_ok=True)
-        (st.data_dir / "meals.pid").write_text(str(os.getpid()), encoding="utf-8")
+        pid_file = st.data_dir / "meals.pid"
+        pid_file.write_text(str(os.getpid()), encoding="utf-8")
         if sys.stdout is None or sys.stderr is None:  # pythonw (start.bat): log to a file
             log = open(st.data_dir / "meals.log", "a", encoding="utf-8", buffering=1)  # noqa: SIM115
             sys.stdout = sys.stderr = log
-        uvicorn.run(create_app(settings=st), host=a.host or st.host, port=a.port or st.port)
+        try:
+            uvicorn.run(create_app(settings=st), host=host, port=port)
+        finally:
+            if _read_pid(pid_file) == os.getpid():
+                pid_file.unlink(missing_ok=True)
         return
-    if a.cmd == "stop":
+    if a.cmd in ("stop", "status"):
+        import time
+
         from meals.config import get_settings
 
-        pid_file = get_settings().data_dir / "meals.pid"
-        if not pid_file.exists():
+        st = get_settings()
+        pid_file = st.data_dir / "meals.pid"
+        pid = _read_pid(pid_file)
+        running = pid is not None and _pid_alive(pid)
+        if a.cmd == "status":
+            if running and _listening(st.host, st.port):
+                print(f"Running (PID {pid}) on http://{st.host}:{st.port}/")
+            elif running:
+                print(f"Starting (PID {pid}), not answering on port {st.port} yet.")
+                sys.exit(2)
+            elif _listening(st.host, st.port):
+                print(f"Something else is using port {st.port} (no meals.pid for it).")
+                sys.exit(1)
+            else:
+                print("Not running.")
+                sys.exit(1)
+            return
+        if not running:
+            pid_file.unlink(missing_ok=True)
+            if _listening(st.host, st.port):
+                print(
+                    f"Port {st.port} is in use but there's no PID on file. "
+                    "End the pythonw.exe running meals in Task Manager."
+                )
+                sys.exit(1)
             print("Not running.")
             return
-        try:
-            os.kill(int(pid_file.read_text(encoding="utf-8")), signal.SIGTERM)
-            print("Stopped.")
-        except (OSError, ValueError):
-            print("Wasn't running.")
+        assert pid is not None
+        os.kill(pid, signal.SIGTERM)
+        for _ in range(50):  # up to 5 s for the process to exit and the port to free up
+            if not _pid_alive(pid) and not _listening(st.host, st.port):
+                break
+            time.sleep(0.1)
         pid_file.unlink(missing_ok=True)
+        print("Stopped.")
         return
     if a.cmd == "demo":
         import uvicorn
