@@ -77,3 +77,17 @@ def test_product_has_to_be_the_item() -> None:
     ]
     assert [p for i, p in wrong if ing.matches(i, p)] == []
     assert [p for i, p in right if not ing.matches(i, p)] == []
+
+
+def test_prepared_and_flavoured_products_dont_match() -> None:
+    wrong = [
+        ("parmesan", "Hampton House Chicken Parmesan 1.2 Kg"),
+        ("shrimp", "Royal Asia Honey Walnut Shrimp 907 G"),
+        ("lime", "Maison Perrier Lime 24 X 330 Ml"),
+        ("milk", "Carnation Evaporated Milk"),
+        ("chicken", "Ready For You Crispy Chicken"),
+        ("cod fillet", "Breaded Cod Fillets"),
+    ]
+    assert [p for i, p in wrong if ing.matches(i, p)] == []
+    assert ing.matches("chicken breast", "Yorkshire Valley Farms Organic Chicken Breast 2 Kg")
+    assert ing.matches("salmon fillet", "Marinated Atlantic Salmon Fillets")

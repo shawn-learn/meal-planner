@@ -152,3 +152,10 @@ def test_refresh_replaces_last_search() -> None:
     asyncio.run(deals.refresh(db, hh, dt.date(2026, 11, 9), transport=httpx.MockTransport(handler)))
     rows = db.all("SELECT source, COUNT(*) AS n FROM deals GROUP BY source ORDER BY source")
     assert rows == [{"source": "flipp", "n": 1}, {"source": "manual", "n": 1}]
+
+
+def test_noise_after_the_price_is_dropped() -> None:
+    text = flipp.price_text(
+        11.99, "", "Available for Same-Day delivery at a higher price.", "SAVE $3"
+    )
+    assert text == "$11.99 · SAVE $3"

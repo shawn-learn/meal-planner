@@ -46,6 +46,7 @@ LOCAL = ZoneInfo("America/Edmonton")
 
 # Words around a price that matter to a shopper ("2/", "2 for", "from", "save $3").
 _PRE_OK = re.compile(r"^(\d+\s*(/|for)|from|starting|starts|each|ea|reg|save|buy)", re.I)
+_POST_OK = re.compile(r"(/|\bea\b|each|\blb\b|\bkg\b|\bg\b|or more|\bfor\b)", re.I)
 _STORY_OK = re.compile(r"(save|off|%|\bbuy\b|\bfor\b|\bpts\b|points|free|bonus|limit)", re.I)
 
 
@@ -68,6 +69,7 @@ def price_text(price: float | None, pre: str, post: str, story: str) -> str:
     """ "$3.99/lb", "2/$5.00", "$12.99 · Save $4", without flyer noise such as "VERIFIED" or
     "Available for Same-Day delivery at a higher price"."""
     pre = pre if _PRE_OK.match(pre) else ""
+    post = post if len(post) <= 24 and _POST_OK.search(post) else ""
     parts = [pre, f"${price:.2f}" if price is not None else "", post]
     text = " ".join(p for p in parts if p).replace(" /", "/").replace("/ $", "/$")
     story = story if story and len(story) <= 40 and _STORY_OK.search(story) else ""

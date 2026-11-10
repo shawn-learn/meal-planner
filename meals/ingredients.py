@@ -289,6 +289,8 @@ OTHER_PRODUCT = {
     "burrito", "dumpling", "pie", "sandwich", "wrap", "salad", "kit", "meal", "entree",
     "bouillon", "gravy", "jerky", "snack", "bar", "candy", "mix", "juice", "sauce", "drink",
     "mousse", "cookie", "jam", "crumble", "ruffle", "dip", "spread",
+    "breaded", "battered", "crispy", "popcorn", "tempura", "walnut", "ready", "evaporated",
+    "condensed", "sparkling", "soda", "water", "perrier", "beverage", "parmigiana",
 }  # fmt: skip
 
 
@@ -318,6 +320,8 @@ def matches(item: str, product: str) -> bool:
         return False
     if want & MEATS and (have & MEATS) - want:
         return False
+    if have & MEATS and not want & MEATS:
+        return False  # "Chicken Parmesan" isn't parmesan
     if (have & OTHER_PRODUCT) - want:
         return False
     # The product has to *be* the item: "Honeycrisp Apples" is apples, "Apple Juice" and
