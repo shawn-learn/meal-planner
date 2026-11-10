@@ -1,0 +1,51 @@
+# Copy to planner.toml and edit. Everything here is about the household; secrets go in .env.
+
+timezone = "America/Edmonton"
+
+# Everyone who might cook. The planner gives each night to whoever has the most time before
+# dinner, and shares the nights out fairly.
+[[members]]
+name = "Shawn"
+cooks = true
+max_minutes = 60       # most hands-on minutes on a weeknight
+# Google Calendar → Settings → your calendar → "Secret address in iCal format". Add as many
+# as you like (work, kids' sports, the family calendar).
+calendars = [
+  # "https://calendar.google.com/calendar/ical/.../basic.ics",
+]
+
+[[members]]
+name = "Partner"
+cooks = true
+max_minutes = 45
+calendars = []
+
+[dinner]
+time = "18:00"          # when dinner is on the table
+cook_from = "16:00"     # nobody starts cooking before this
+servings = 4
+skip_days = []          # e.g. ["fri"] for a standing night out
+leftovers_ok = true     # a busy night after a big batch becomes leftovers night
+
+[deals]
+postal_code = "T3A 0A0" # your postal code, so the flyers are for your stores
+# Flipp merchant names, matched loosely ("Co-op" matches "Calgary Co-op").
+stores = ["Costco", "Safeway", "Calgary Co-op"]
+# Watch these even when no recipe needs them yet.
+watch = ["chicken breast", "ground beef", "salmon", "pork tenderloin"]
+
+[kitchen]
+# Always in the house; never put on the list.
+pantry = [
+  "salt", "pepper", "black pepper", "olive oil", "vegetable oil", "canola oil", "water",
+  "sugar", "brown sugar", "flour", "all-purpose flour", "baking powder", "baking soda",
+  "soy sauce", "garlic powder", "onion powder", "paprika", "smoked paprika", "chili powder",
+  "cumin", "dried oregano", "dried thyme", "italian seasoning", "red pepper flakes",
+  "vinegar", "honey", "dijon mustard", "ketchup", "cornstarch", "chicken broth", "rice",
+]
+# Never plan anything with these (allergies, hard no's).
+avoid = []
+
+[keep]
+list_title = "Shopping list"   # the list Google Home adds to
+marker = "🍽"                  # the planner only ever changes items ending in this

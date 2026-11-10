@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meal Planner</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽</text></svg>" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">🍽</span>
+      <div>
+        <h1>Meal Planner</h1>
+        <p class="sub" id="week-label">&nbsp;</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="week" aria-selected="true">Week</button>
+      <button role="tab" data-tab="recipes">Recipes</button>
+      <button role="tab" data-tab="deals">Deals</button>
+      <button role="tab" data-tab="taste">Taste</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- WEEK -->
+    <section id="tab-week" class="tab">
+      <div class="toolbar">
+        <div class="weeknav">
+          <button class="icon" id="prev-week" aria-label="Previous week">‹</button>
+          <button class="ghost" id="this-week">This week</button>
+          <button class="icon" id="next-week" aria-label="Next week">›</button>
+        </div>
+        <div class="actions">
+          <button class="ghost" id="refresh-deals">Check deals</button>
+          <button class="primary" id="plan-week">Plan this week</button>
+        </div>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="layout">
+        <div>
+          <div id="rate-banner"></div>
+          <div class="days" id="days"></div>
+        </div>
+        <aside class="panel" id="shopping">
+          <div class="panel-head">
+            <h2>Shopping list</h2>
+            <button class="primary small" id="send-keep">Send to Keep</button>
+          </div>
+          <div id="shopping-body"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- RECIPES -->
+    <section id="tab-recipes" class="tab" hidden>
+      <div class="toolbar">
+        <input id="recipe-search" type="search" placeholder="Search recipes, tags, ingredients…" />
+        <form id="import-form" class="inline">
+          <input id="import-url" type="url" placeholder="Paste a recipe link to add it" required />
+          <button class="primary">Add</button>
+        </form>
+      </div>
+      <div class="grid" id="recipe-grid"></div>
+    </section>
+
+    <!-- DEALS -->
+    <section id="tab-deals" class="tab" hidden>
+      <div class="toolbar">
+        <input id="deal-search" type="search" placeholder="Filter deals…" />
+        <button class="ghost" id="refresh-deals-2">Check flyers now</button>
+      </div>
+      <p class="muted" id="deals-meta"></p>
+      <div class="layout">
+        <div class="grid deals" id="deal-grid"></div>
+        <aside class="panel">
+          <h2>Add a deal you spotted</h2>
+          <p class="muted">For the Costco coupon book or an in-store sticker. The planner treats it like a flyer deal.</p>
+          <form id="deal-form" class="stack">
+            <label>Store <input name="store" list="store-list" required placeholder="Costco" /></label>
+            <datalist id="store-list"><option>Costco</option><option>Safeway</option><option>Calgary Co-op</option></datalist>
+            <label>What <input name="name" required placeholder="Kirkland chicken thighs" /></label>
+            <label>Price <input name="price" type="number" step="0.01" placeholder="12.99" /></label>
+            <label>Until <input name="valid_to" type="date" /></label>
+            <label>Note <input name="note" placeholder="$4 off, coupon book" /></label>
+            <button class="primary">Save deal</button>
+          </form>
+        </aside>
+      </div>
+    </section>
+
+    <!-- TASTE -->
+    <section id="tab-taste" class="tab" hidden>
+      <div class="taste-grid" id="taste"></div>
+    </section>
+  </main>
+
+  <dialog id="modal">
+    <form method="dialog" class="modal-close"><button class="icon" aria-label="Close">✕</button></form>
+    <div id="modal-body"></div>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
