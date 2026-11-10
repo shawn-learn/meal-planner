@@ -42,8 +42,14 @@ also reads the week's Western Canada sale list from [cocowest.ca](https://cocowe
 a week, matched against your recipes. Turn it off with `cocowest = false`. Safeway's own flyer
 page blocks scripts too, and Calgary Co-op's flyer is Flipp itself, so Flipp covers both.
 
-A deal counts only if it's still on when you shop: today for the current week, or the weekend
-before for next week. Flyer end dates are converted to Calgary time.
+A deal counts for a dinner only if it's still on within two days before that dinner (and after
+you shop: today for the current week, the weekend before for next week), so a deal ending
+Wednesday helps Thursday's dinner but not Sunday's. Flyer end dates are converted to Calgary time.
+Each check replaces the last one's results; deals you added by hand stay.
+
+Matching is strict on purpose: the product has to *be* the ingredient ("Honeycrisp Apples" for
+apples, not "Apple Juice"; "Lean Ground Beef", not a beef and pork blend). Costco's online-only
+prices and cocowest listings without an instant saving are skipped.
 
 ## 4. Google Keep
 

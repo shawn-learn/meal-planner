@@ -98,6 +98,10 @@ async def refresh(
         exclude=household.exclude_stores,
     )
     prune(db, today)
+    if found or not failed:
+        # A fresh search replaces the last one; manual deals stay.
+        with db.tx() as c:
+            c.execute("DELETE FROM deals WHERE source = 'flipp'")
     saved = store_deals(db, found)
     result: dict[str, Any] = {"searched": len(queries), "saved": saved}
 
@@ -105,6 +109,8 @@ async def refresh(
         try:
             costco = await cocowest.fetch(timeout_s, transport)
             matched = match_to_items(costco, queries)
+            with db.tx() as c:
+                c.execute("DELETE FROM deals WHERE source = 'cocowest'")
             result["costco_cocowest"] = store_deals(db, matched, source="cocowest")
         except (httpx.HTTPError, ValueError) as exc:
             result["costco_cocowest_error"] = str(exc) or type(exc).__name__
@@ -165,6 +171,23 @@ def current(db: DB, day: _dt.date) -> list[dict[str, Any]]:
         day.isoformat(),
         (day + _dt.timedelta(days=1)).isoformat(),
     )
+
+
+# Buy at most this many days ahead of the dinner, so a deal that ends Wednesday helps
+# Thursday's and Friday's dinners but not Sunday's.
+BUY_AHEAD_DAYS = 2
+
+
+def on_for_dinner(deal: dict[str, Any], day: _dt.date, shop: _dt.date) -> bool:
+    """Can this deal be used for a dinner on `day`, shopping no earlier than `shop`?"""
+    latest_buy = max(shop, day - _dt.timedelta(days=BUY_AHEAD_DAYS))
+    if deal.get("valid_to") and deal["valid_to"] < latest_buy.isoformat():
+        return False
+    return not (deal.get("valid_from") and deal["valid_from"] > day.isoformat())
+
+
+def for_dinner(deals: list[dict[str, Any]], day: _dt.date, shop: _dt.date) -> list[dict[str, Any]]:
+    return [d for d in deals if on_for_dinner(d, day, shop)]
 
 
 def best_by_item(items: list[str], deals: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:

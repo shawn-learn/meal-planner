@@ -48,6 +48,8 @@ def parse_post(page: str, url: str | None = None) -> list[Deal]:
         name = html.unescape(m.group("name")).strip()
         price = float(m.group("price").replace(",", ""))
         save = m.group("save")
+        if not save:
+            continue  # no instant savings: a regular or clearance listing, not this week's sale
         savings = float(save.strip("$").replace(",", "")) if save else None
         tag_start = page.rfind("<img", 0, m.start())
         tag = page[tag_start : page.find(">", m.end()) + 1] if tag_start >= 0 else ""

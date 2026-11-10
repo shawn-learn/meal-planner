@@ -23,15 +23,13 @@ def test_parse_post() -> None:
     assert [i.name for i in items] == [
         "Copper Bluff Seafood Smoked Pink Salmon 454 G",
         "Kirkland Signature Chicken Thighs Boneless 2 Kg",
-        "Duracell Aa Batteries 40 Pk",
-    ]
+    ]  # the batteries have no instant savings, so they're a regular listing, not a sale
     salmon = items[0]
     assert salmon.store == "Costco"
     assert salmon.price == 9.99 and salmon.regular_price == 12.99
     assert salmon.valid_to == "2026-11-15"
     assert salmon.price_text == "$9.99 · save $3.00"
     assert salmon.image_url == "https://cocowest.ca/wp-content/uploads/1424066.jpg"
-    assert items[2].valid_to is None and items[2].regular_price is None
 
 
 def test_latest_post_url() -> None:

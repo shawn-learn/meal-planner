@@ -287,8 +287,22 @@ OTHER_PRODUCT = {
     "soup", "broth", "stock", "flavour", "flavor", "flavoured", "flavored", "seasoning",
     "chip", "cracker", "nugget", "treat", "cat", "dog", "pet", "kibble", "pizza", "taco",
     "burrito", "dumpling", "pie", "sandwich", "wrap", "salad", "kit", "meal", "entree",
-    "bouillon", "gravy", "jerky", "snack", "bar", "candy", "mix",
+    "bouillon", "gravy", "jerky", "snack", "bar", "candy", "mix", "juice", "sauce", "drink",
+    "mousse", "cookie", "jam", "crumble", "ruffle", "dip", "spread",
 }  # fmt: skip
+
+
+# Words that can trail a product name without being what it is ("Chicken Thighs Value Pack").
+TRAILING = {
+    "pack", "value", "family", "size", "box", "tray", "club", "halve", "half", "portion",
+    "selected", "select", "assorted", "variety", "varieties", "ea", "each", "bulk", "count",
+    "pk", "ct", "lbs", "kgs", "per", "or", "with", "fresh", "product", "canada",
+}  # fmt: skip
+
+
+def head_word(product: str) -> str:
+    words = [w for w in normalize(product).split() if w not in TRAILING]
+    return words[-1] if words else ""
 
 
 def matches(item: str, product: str) -> bool:
@@ -304,7 +318,11 @@ def matches(item: str, product: str) -> bool:
         return False
     if want & MEATS and (have & MEATS) - want:
         return False
-    return not (have & OTHER_PRODUCT) - want
+    if (have & OTHER_PRODUCT) - want:
+        return False
+    # The product has to *be* the item: "Honeycrisp Apples" is apples, "Apple Juice" and
+    # "Cookie Butter Mousse" aren't.
+    return head_word(product) in want
 
 
 def is_pantry(item: str, pantry: list[str]) -> bool:

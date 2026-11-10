@@ -73,8 +73,9 @@ class Planner:
     def week(self, start: _dt.date | None = None) -> dict[str, Any]:
         start = start or self.upcoming_week()
         choices = planner.load_choices(self.db, start)
-        current = deal_mod.current(self.db, deal_mod.shop_day(start, self.today()))
-        lst = shopping.build(choices, self.household, current)
+        shop = deal_mod.shop_day(start, self.today())
+        current = deal_mod.current(self.db, shop)
+        lst = shopping.build(choices, self.household, current, shop)
         cooks = Counter(c.cook for c in choices if c.cook and c.kind == "cook")
         plan_row = self.db.one("SELECT * FROM plans WHERE week_start = ?", start.isoformat())
         return {

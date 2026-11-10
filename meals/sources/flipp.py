@@ -85,6 +85,8 @@ def parse_item(raw: dict[str, Any], query: str, tz: ZoneInfo = LOCAL) -> Deal | 
     pre = str(raw.get("pre_price_text") or "").strip()
     post = str(raw.get("post_price_text") or "").strip()
     story = str(raw.get("sale_story") or "").strip()
+    if "online" in f"{pre} {story}".lower():
+        return None  # online-only price, not in the store
     unit = None
     low = post.lower()
     for u in ("/lb", "/kg", "/100 g", "/100g", "/ea", "each"):

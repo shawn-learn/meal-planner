@@ -114,3 +114,41 @@ def test_expired_deals_dont_count_for_next_week() -> None:
     # Planning the current week on Tuesday: shop today, both still on.
     shop = deals.shop_day(dt.date(2026, 11, 9), today=dt.date(2026, 11, 10))
     assert len(deals.current(db, shop)) == 2
+
+
+def test_deal_counts_only_for_dinners_soon_after_it_ends() -> None:
+    deal = {"valid_from": "2026-11-05", "valid_to": "2026-11-11"}
+    shop = dt.date(2026, 11, 10)  # planning the current week on Tuesday
+    on = [d for d in range(9, 16) if deals.on_for_dinner(deal, dt.date(2026, 11, d), shop)]
+    assert on == [9, 10, 11, 12, 13]  # bought by Wednesday, so not for the weekend
+
+
+def test_online_only_prices_are_skipped() -> None:
+    raw = {
+        "name": "Ambrosia Apples",
+        "merchant_name": "Costco",
+        "current_price": 9.99,
+        "pre_price_text": "Online Price",
+    }
+    assert flipp.parse_item(raw, "apple") is None
+
+
+def test_refresh_replaces_last_search() -> None:
+    from meals import recipes
+    from tests.conftest import household
+
+    db = DB(":memory:")
+    recipes.seed(db)
+    hh = household(cocowest=False)
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=FLIPP)
+
+    for _ in range(2):
+        asyncio.run(
+            deals.refresh(db, hh, dt.date(2026, 11, 9), transport=httpx.MockTransport(handler))
+        )
+    deals.add_manual(db, "Costco", "Chicken Thighs", 12.99, None)
+    asyncio.run(deals.refresh(db, hh, dt.date(2026, 11, 9), transport=httpx.MockTransport(handler)))
+    rows = db.all("SELECT source, COUNT(*) AS n FROM deals GROUP BY source ORDER BY source")
+    assert rows == [{"source": "flipp", "n": 1}, {"source": "manual", "n": 1}]

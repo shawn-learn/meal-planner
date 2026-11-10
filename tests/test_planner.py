@@ -139,3 +139,24 @@ def test_start_time_formats_on_every_platform() -> None:
 
     assert _fmt(dt.time(16, 0)) == "4:00 pm"
     assert _fmt(dt.time(17, 30)) == "5:30 pm"
+
+
+def test_ended_deals_dont_drive_weekend_dinners(make_planner) -> None:  # type: ignore[no-untyped-def]
+    p = make_planner()  # today is Tuesday Nov 10
+    ended = Deal(
+        "Safeway",
+        "Atlantic Salmon Fillets",
+        5.99,
+        "$5.99",
+        9.99,
+        None,
+        "2026-11-05",
+        "2026-11-11",
+        None,
+        None,
+        "salmon fillet",
+    )
+    deals.store_deals(p.db, [ended])
+    week = p.plan(MONDAY)
+    for m in week["meals"][5:]:  # Saturday, Sunday
+        assert not any(r["kind"] == "deal" and "Salmon" in r["text"] for r in m["reasons"])

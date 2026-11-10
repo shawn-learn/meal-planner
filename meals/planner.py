@@ -69,6 +69,7 @@ class Context:
     deals: list[dict[str, Any]]
     last_served: dict[int, _dt.date]
     rng: random.Random
+    shop: _dt.date = _dt.date.min
     # Once a few dinners are rated, "new" becomes worth pointing out.
     has_history: bool = False
 
@@ -85,14 +86,15 @@ def _uses_avoided(recipe: dict[str, Any], avoid: list[str]) -> bool:
 
 
 def deal_score(
-    recipe: dict[str, Any], ctx: Context
+    recipe: dict[str, Any], ctx: Context, day: _dt.date | None = None
 ) -> tuple[float, list[Reason], list[dict[str, Any]]]:
     items = [
         i["item"]
         for i in recipe["ingredients"]
         if not ing.is_pantry(i["item"], ctx.household.pantry)
     ]
-    best = deal_mod.best_by_item(items, ctx.deals)
+    deals = deal_mod.for_dinner(ctx.deals, day, ctx.shop) if day else ctx.deals
+    best = deal_mod.best_by_item(items, deals)
     score = 0.0
     reasons: list[Reason] = []
     protein = recipe.get("protein")
@@ -130,7 +132,7 @@ def score_recipe(
     reasons: list[Reason] = []
     taste, taste_reasons = learn.recipe_preference(recipe, ctx.weights)
     reasons += [Reason("taste", t) for t in taste_reasons]
-    deal, deal_reasons, _ = deal_score(recipe, ctx)
+    deal, deal_reasons, _ = deal_score(recipe, ctx, day)
     reasons = deal_reasons + reasons
 
     variety = 0.0
@@ -226,6 +228,7 @@ def build_context(
         household=household,
         weights=learn.weights(db),
         deals=deal_mod.current(db, shop),
+        shop=shop,
         last_served=_last_served(db, start),
         rng=random.Random(start.toordinal()),
         has_history=bool(db.one("SELECT 1 AS x FROM ratings LIMIT 1 OFFSET 4")),
