@@ -36,11 +36,11 @@ def main(argv: list[str] | None = None) -> None:
     w = sub.add_parser("weekly", help="Check deals, plan the upcoming week, update Keep")
     w.add_argument("--no-keep", action="store_true", help="Don't touch Google Keep")
 
-    p = sub.add_parser("plan", help="Plan a week (default: the upcoming one)")
+    p = sub.add_parser("plan", help="Plan a week (default: this week, or next week from Friday on)")
     p.add_argument("--week", help="Any date in the week, YYYY-MM-DD")
     p.add_argument("--fresh", action="store_true", help="Also replace kept dinners")
 
-    sub.add_parser("show", help="Print the upcoming week").add_argument("--week")
+    sub.add_parser("show", help="Print the plan (same default week as plan)").add_argument("--week")
     sub.add_parser("deals", help="Check the flyers now")
 
     d = sub.add_parser("add-deal", help="Save a deal you saw (e.g. Costco coupon book)")

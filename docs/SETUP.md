@@ -37,8 +37,19 @@ Flipp is the app the flyers are published to; its search isn't an official API. 
 planning carries on without deals, and you can still add deals by hand on the Deals tab or with
 `uv run meals add-deal Costco "Kirkland chicken thighs" --price 12.99 --until 2026-11-30`.
 
-Costco often puts its warehouse savings in a monthly coupon book that isn't in Flipp. Adding the
-few items you care about by hand works well.
+Costco's own savings page blocks scripts and its items barely show up in Flipp, so the planner
+also reads the week's Western Canada sale list from [cocowest.ca](https://cocowest.ca/): one page
+a week, matched against your recipes. Turn it off with `cocowest = false`. Safeway's own flyer
+page blocks scripts too, and Calgary Co-op's flyer is Flipp itself, so Flipp covers both.
+
+A deal counts for a dinner only if it's still on within two days before that dinner (and after
+you shop: today for the current week, the weekend before for next week), so a deal ending
+Wednesday helps Thursday's dinner but not Sunday's. Flyer end dates are converted to Calgary time.
+Each check replaces the last one's results; deals you added by hand stay.
+
+Matching is strict on purpose: the product has to *be* the ingredient ("Honeycrisp Apples" for
+apples, not "Apple Juice"; "Lean Ground Beef", not a beef and pork blend). Costco's online-only
+prices and cocowest listings without an instant saving are skipped.
 
 ## 4. Google Keep
 

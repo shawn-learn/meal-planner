@@ -3,6 +3,7 @@ pantry, each with the best deal on it and the store to get it at."""
 
 from __future__ import annotations
 
+import datetime as _dt
 import math
 from collections import defaultdict
 from typing import Any
@@ -16,10 +17,16 @@ from meals.planner import Choice
 WHOLE_UNITS = {"can", "jar", "pkg", "bunch", "head", "bag", None}
 
 
-def build(week: list[Choice], household: Household, deals: list[dict[str, Any]]) -> dict[str, Any]:
+def build(
+    week: list[Choice],
+    household: Household,
+    deals: list[dict[str, Any]],
+    shop: _dt.date | None = None,
+) -> dict[str, Any]:
     totals: dict[tuple[str, str | None], float | None] = {}
     uses: dict[str, list[str]] = defaultdict(list)
     lines: dict[str, list[str]] = defaultdict(list)
+    first_day: dict[str, _dt.date] = {}
     for ch in week:
         if ch.kind != "cook" or not ch.recipe:
             continue
@@ -38,6 +45,7 @@ def build(week: list[Choice], household: Household, deals: list[dict[str, Any]])
             else:
                 prev = totals.get(key)
                 totals[key] = (prev or 0) + q * factor
+            first_day.setdefault(item, ch.day)
             if r["name"] not in uses[item]:
                 uses[item].append(r["name"])
             lines[item].append(i["line"])
@@ -53,7 +61,10 @@ def build(week: list[Choice], household: Household, deals: list[dict[str, Any]])
             by_item[item].append(amount)
 
     items = sorted({item for item, _ in totals})
-    best = deal_mod.best_by_item(items, deals)
+    best: dict[str, dict[str, Any]] = {}
+    for item in items:
+        usable = deal_mod.for_dinner(deals, first_day[item], shop) if shop else deals
+        best.update(deal_mod.best_by_item([item], usable))
     out: list[dict[str, Any]] = []
     for item in items:
         d = best.get(item)

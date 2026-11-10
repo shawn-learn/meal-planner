@@ -7,8 +7,8 @@ Every week it looks at:
 - **Who's free.** Everyone's Google Calendar. Each night goes to whoever has the most time
   before dinner, and the nights are shared out. A busy night gets a quick dinner. If nobody's
   free after a big batch the night before, it plans leftovers.
-- **What's on sale.** This week's flyers at Costco, Safeway and Calgary Co-op (through Flipp),
-  searched for everything your recipes use. Recipes whose main ingredients are on sale move up,
+- **What's on sale.** This week's flyers at Safeway and Calgary Co-op (through Flipp) and
+  Costco's weekly sale items (Flipp plus cocowest.ca), searched for everything your recipes use. Recipes whose main ingredients are on sale move up,
   and the list says where to buy each thing.
 - **What you like.** Rate dinners 1–5 with one tap. Ratings and swaps nudge that recipe, its
   cuisine and its protein. It also avoids repeats from the last couple of weeks and doesn't

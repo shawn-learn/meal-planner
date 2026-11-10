@@ -8,8 +8,11 @@ something, the planner keeps working; it just plans without deals until this is 
 from __future__ import annotations
 
 import asyncio
+import datetime as _dt
+import re
 from dataclasses import dataclass
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -39,11 +42,43 @@ def _float(value: Any) -> float | None:
         return None
 
 
-def _date(value: Any) -> str | None:
-    return str(value)[:10] if value else None
+LOCAL = ZoneInfo("America/Edmonton")
+
+# Words around a price that matter to a shopper ("2/", "2 for", "from", "save $3").
+_PRE_OK = re.compile(r"^(\d+\s*(/|for)|from|starting|starts|each|ea|reg|save|buy)", re.I)
+_POST_OK = re.compile(r"(/|\bea\b|each|\blb\b|\bkg\b|\bg\b|or more|\bfor\b)", re.I)
+_STORY_OK = re.compile(r"(save|off|%|\bbuy\b|\bfor\b|\bpts\b|points|free|bonus|limit)", re.I)
 
 
-def parse_item(raw: dict[str, Any], query: str) -> Deal | None:
+def _date(value: Any, tz: ZoneInfo = LOCAL) -> str | None:
+    """The local date. Flipp gives UTC: a flyer ending "2026-11-12T04:59:59Z" ends on the
+    evening of the 11th in Calgary."""
+    if not value:
+        return None
+    text = str(value)
+    try:
+        moment = _dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return text[:10]
+    if moment.tzinfo is None:
+        return moment.date().isoformat()
+    return moment.astimezone(tz).date().isoformat()
+
+
+def price_text(price: float | None, pre: str, post: str, story: str) -> str:
+    """ "$3.99/lb", "2/$5.00", "$12.99 · Save $4", without flyer noise such as "VERIFIED" or
+    "Available for Same-Day delivery at a higher price"."""
+    pre = pre if _PRE_OK.match(pre) else ""
+    post = post if len(post) <= 24 and _POST_OK.search(post) else ""
+    parts = [pre, f"${price:.2f}" if price is not None else "", post]
+    text = " ".join(p for p in parts if p).replace(" /", "/").replace("/ $", "/$")
+    story = story if story and len(story) <= 40 and _STORY_OK.search(story) else ""
+    if story and story.lower() not in text.lower():
+        text = f"{text} · {story}" if text else story
+    return text or "On sale"
+
+
+def parse_item(raw: dict[str, Any], query: str, tz: ZoneInfo = LOCAL) -> Deal | None:
     name = str(raw.get("name") or "").strip()
     store = str(raw.get("merchant_name") or raw.get("merchant") or "").strip()
     if not name or not store:
@@ -52,10 +87,8 @@ def parse_item(raw: dict[str, Any], query: str) -> Deal | None:
     pre = str(raw.get("pre_price_text") or "").strip()
     post = str(raw.get("post_price_text") or "").strip()
     story = str(raw.get("sale_story") or "").strip()
-    parts = [pre, f"${price:.2f}" if price is not None else "", post]
-    price_text = " ".join(p for p in parts if p).replace(" /", "/") or story or "On sale"
-    if story and story.lower() not in price_text.lower():
-        price_text = f"{price_text} · {story}" if price is not None else story
+    if "online" in f"{pre} {story}".lower():
+        return None  # online-only price, not in the store
     unit = None
     low = post.lower()
     for u in ("/lb", "/kg", "/100 g", "/100g", "/ea", "each"):
@@ -66,24 +99,30 @@ def parse_item(raw: dict[str, Any], query: str) -> Deal | None:
         store=store,
         name=name,
         price=price,
-        price_text=price_text,
+        price_text=price_text(price, pre, post, story),
         regular_price=_float(raw.get("original_price")),
         unit=unit,
-        valid_from=_date(raw.get("valid_from")),
-        valid_to=_date(raw.get("valid_to")),
+        valid_from=_date(raw.get("valid_from"), tz),
+        valid_to=_date(raw.get("valid_to"), tz),
         image_url=raw.get("clean_image_url") or raw.get("clipping_image_url"),
         link=FLYER_LINK.format(id=item_id) if item_id else None,
         query=query,
     )
 
 
-def wanted_store(store: str, stores: list[str]) -> bool:
+def wanted_store(store: str, stores: list[str], exclude: list[str] | None = None) -> bool:
     low = store.lower()
+    if any(x.lower() in low for x in exclude or []):
+        return False
     return any(s.lower() in low for s in stores)
 
 
 async def search(
-    client: httpx.AsyncClient, postal_code: str, query: str, stores: list[str]
+    client: httpx.AsyncClient,
+    postal_code: str,
+    query: str,
+    stores: list[str],
+    exclude: list[str] | None = None,
 ) -> list[Deal]:
     resp = await client.get(
         SEARCH_URL, params={"locale": "en-ca", "postal_code": postal_code, "q": query}
@@ -96,7 +135,7 @@ async def search(
         if not isinstance(raw, dict):
             continue
         deal = parse_item(raw, query)
-        if deal and wanted_store(deal.store, stores):
+        if deal and wanted_store(deal.store, stores, exclude):
             out.append(deal)
     return out
 
@@ -108,6 +147,7 @@ async def search_many(
     timeout_s: float = 15.0,
     transport: httpx.AsyncBaseTransport | None = None,
     concurrency: int = 4,
+    exclude: list[str] | None = None,
 ) -> tuple[list[Deal], list[str]]:
     """Run every query politely (a few at a time). Returns deals and the queries that failed."""
     sem = asyncio.Semaphore(concurrency)
@@ -119,7 +159,7 @@ async def search_many(
         async def one(q: str) -> list[Deal]:
             async with sem:
                 try:
-                    return await search(c, postal_code, q, stores)
+                    return await search(c, postal_code, q, stores, exclude)
                 except (httpx.HTTPError, ValueError):
                     failed.append(q)
                     return []
