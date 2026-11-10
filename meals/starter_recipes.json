@@ -1,0 +1,745 @@
+[
+ {
+  "name": "Sheet-Pan Lemon Herb Chicken Thighs",
+  "tags": [
+   "sheet-pan",
+   "easy",
+   "gluten-free"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 35,
+  "hands_on_minutes": 15,
+  "servings": 4,
+  "ingredients": [
+   "2 lb boneless skinless chicken thighs",
+   "1 1/2 lb baby potatoes, halved",
+   "2 cups broccoli florets",
+   "1 lemon",
+   "3 cloves garlic, minced",
+   "2 tbsp olive oil",
+   "1 tsp dried oregano",
+   "Salt and pepper to taste"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Heat oven to 425°F.\n2. Toss potatoes with half the oil, salt and pepper; roast 10 minutes.\n3. Rub chicken with garlic, lemon zest, oregano and the rest of the oil; add to the pan with the broccoli.\n4. Roast 25 minutes until the chicken reaches 165°F. Squeeze lemon over everything."
+ },
+ {
+  "name": "Beef and Broccoli Stir-Fry",
+  "tags": [
+   "asian",
+   "quick",
+   "stir-fry"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 12,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 lb flank steak, thinly sliced",
+   "4 cups broccoli florets",
+   "3 tbsp soy sauce",
+   "2 tbsp oyster sauce",
+   "1 tbsp brown sugar",
+   "1 tbsp cornstarch",
+   "2 cloves garlic, minced",
+   "1 tbsp fresh ginger, grated",
+   "1 tbsp vegetable oil",
+   "2 cups rice"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Start the rice.\n2. Toss beef with cornstarch and 1 tbsp soy sauce.\n3. Sear beef in a hot oiled pan in batches; set aside.\n4. Stir-fry broccoli with garlic and ginger 3 minutes, add a splash of water to steam.\n5. Return beef with the remaining soy, oyster sauce and sugar; toss until glossy. Serve over rice."
+ },
+ {
+  "name": "Weeknight Spaghetti Bolognese",
+  "tags": [
+   "italian",
+   "kid-friendly",
+   "pasta"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 30,
+  "hands_on_minutes": 15,
+  "servings": 6,
+  "ingredients": [
+   "1 lb lean ground beef",
+   "1 onion, diced",
+   "2 carrots, finely diced",
+   "3 cloves garlic, minced",
+   "1 (28 oz) can crushed tomatoes",
+   "2 tbsp tomato paste",
+   "1 tsp dried oregano",
+   "1 lb spaghetti",
+   "1/2 cup grated parmesan"
+  ],
+  "makes_leftovers": true,
+  "instructions": "1. Brown beef with onion and carrot.\n2. Add garlic and tomato paste for 1 minute, then tomatoes and oregano; simmer 20 minutes.\n3. Cook spaghetti; toss with sauce and top with parmesan."
+ },
+ {
+  "name": "Chicken Fajitas",
+  "tags": [
+   "mexican",
+   "quick",
+   "kid-friendly"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 15,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 1/2 lb chicken breast, sliced",
+   "2 bell peppers, sliced",
+   "1 onion, sliced",
+   "2 tbsp fajita seasoning",
+   "8 flour tortillas",
+   "1 cup shredded cheddar",
+   "1/2 cup sour cream",
+   "1 cup salsa",
+   "1 lime"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Toss chicken with seasoning.\n2. Sear chicken in a hot pan until cooked; set aside.\n3. Cook peppers and onions until charred at the edges.\n4. Return chicken, squeeze lime over, and serve in warm tortillas with toppings."
+ },
+ {
+  "name": "Honey Garlic Salmon with Rice",
+  "tags": [
+   "quick",
+   "seafood",
+   "gluten-free"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 15,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "4 salmon fillets",
+   "3 tbsp honey",
+   "2 tbsp soy sauce",
+   "3 cloves garlic, minced",
+   "1 lemon",
+   "1 lb green beans, trimmed",
+   "2 cups rice"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Start the rice.\n2. Whisk honey, soy, garlic and lemon juice.\n3. Sear salmon skin-side down 4 minutes, flip, pour the sauce in and simmer 3–4 minutes, spooning it over.\n4. Steam or sauté the green beans and serve."
+ },
+ {
+  "name": "Slow Cooker Pulled Pork",
+  "tags": [
+   "slow-cooker",
+   "make-ahead",
+   "kid-friendly"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 480,
+  "hands_on_minutes": 15,
+  "servings": 8,
+  "ingredients": [
+   "3 lb pork shoulder",
+   "1 onion, sliced",
+   "1 cup barbecue sauce",
+   "1/2 cup chicken broth",
+   "2 tbsp brown sugar",
+   "1 tbsp smoked paprika",
+   "8 hamburger buns",
+   "1 bag coleslaw mix",
+   "1/3 cup mayonnaise"
+  ],
+  "makes_leftovers": true,
+  "instructions": "1. In the morning: rub pork with sugar and paprika, put on the onion in the slow cooker with the broth.\n2. Cook on low 8 hours.\n3. Shred, stir in barbecue sauce.\n4. Toss coleslaw mix with mayo and serve on buns."
+ },
+ {
+  "name": "Black Bean Quesadillas",
+  "tags": [
+   "vegetarian",
+   "quick",
+   "kid-friendly",
+   "mexican"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 15,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 can black beans, rinsed",
+   "1 cup frozen corn",
+   "2 cups shredded monterey jack",
+   "8 flour tortillas",
+   "1 tsp cumin",
+   "1 cup salsa",
+   "1 avocado"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Mash half the beans with cumin; stir in the rest and the corn.\n2. Fill tortillas with beans and cheese and fold.\n3. Cook in a dry pan 2–3 minutes a side until crisp. Serve with salsa and sliced avocado."
+ },
+ {
+  "name": "Chicken Caesar Wraps",
+  "tags": [
+   "quick",
+   "no-cook",
+   "kid-friendly"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 0,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 rotisserie chicken",
+   "1 head romaine lettuce",
+   "1/2 cup caesar dressing",
+   "1/2 cup grated parmesan",
+   "6 large flour tortillas",
+   "1 cup croutons"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Shred the chicken.\n2. Chop the romaine and toss with dressing, parmesan and crushed croutons.\n3. Fill tortillas with chicken and salad and roll up."
+ },
+ {
+  "name": "Thai Red Curry with Chicken",
+  "tags": [
+   "thai",
+   "curry",
+   "gluten-free"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 20,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 1/2 lb chicken thighs, cubed",
+   "1 can coconut milk",
+   "3 tbsp red curry paste",
+   "1 red bell pepper, sliced",
+   "2 cups baby spinach",
+   "1 tbsp fish sauce",
+   "1 tbsp brown sugar",
+   "1 lime",
+   "2 cups jasmine rice"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Start the rice.\n2. Fry curry paste in a little oil 1 minute, add chicken and brown.\n3. Add coconut milk, pepper, fish sauce and sugar; simmer 12 minutes.\n4. Stir in spinach and lime juice."
+ },
+ {
+  "name": "Turkey Taco Bowls",
+  "tags": [
+   "mexican",
+   "quick",
+   "gluten-free"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 15,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 lb ground turkey",
+   "2 tbsp taco seasoning",
+   "1 can black beans, rinsed",
+   "2 cups rice",
+   "1 cup salsa",
+   "1 cup shredded cheddar",
+   "1 head romaine lettuce",
+   "1 avocado",
+   "1 lime"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Start the rice.\n2. Brown turkey, add seasoning and 1/3 cup water; simmer 5 minutes.\n3. Warm the beans.\n4. Build bowls with rice, turkey, beans, lettuce, cheese, salsa and avocado."
+ },
+ {
+  "name": "Baked Cod with Roasted Vegetables",
+  "tags": [
+   "seafood",
+   "healthy",
+   "sheet-pan",
+   "gluten-free"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 20,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "4 cod fillets",
+   "2 zucchini, sliced",
+   "1 pint cherry tomatoes",
+   "1 red onion, cut in wedges",
+   "2 tbsp olive oil",
+   "1 lemon",
+   "2 tbsp butter",
+   "2 cloves garlic, minced",
+   "Salt and pepper to taste"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Heat oven to 425°F. Roast vegetables with oil 10 minutes.\n2. Nestle cod among the vegetables, top with butter, garlic and lemon slices.\n3. Roast 10–12 minutes until the fish flakes."
+ },
+ {
+  "name": "Creamy Tuscan Chicken Pasta",
+  "tags": [
+   "italian",
+   "pasta",
+   "kid-friendly"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 25,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 1/2 lb chicken breast",
+   "1 lb penne",
+   "1 cup heavy cream",
+   "1/2 cup sun-dried tomatoes, chopped",
+   "3 cups baby spinach",
+   "3 cloves garlic, minced",
+   "1/2 cup grated parmesan",
+   "1 tsp italian seasoning"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Cook penne.\n2. Season and sear chicken until cooked; slice.\n3. In the same pan cook garlic and sun-dried tomatoes, add cream and parmesan, then spinach until wilted.\n4. Toss with pasta and chicken."
+ },
+ {
+  "name": "Pork Chops with Apples and Sweet Potatoes",
+  "tags": [
+   "fall",
+   "gluten-free"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 25,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "4 bone-in pork chops",
+   "2 apples, sliced",
+   "2 sweet potatoes, cubed",
+   "1 onion, sliced",
+   "2 tbsp butter",
+   "1 tsp dried thyme",
+   "1/2 cup apple cider"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Roast sweet potatoes at 425°F for 25 minutes.\n2. Sear chops 4 minutes a side; rest.\n3. In the pan cook onion and apples in butter with thyme; add cider and reduce.\n4. Serve chops with apples and sweet potatoes."
+ },
+ {
+  "name": "Vegetable Fried Rice with Egg",
+  "tags": [
+   "vegetarian",
+   "quick",
+   "asian",
+   "budget"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 12,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "4 cups cooked rice",
+   "4 large eggs",
+   "2 cups frozen peas and carrots",
+   "4 green onions, sliced",
+   "3 tbsp soy sauce",
+   "1 tbsp sesame oil",
+   "2 cloves garlic, minced"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Scramble eggs in a hot oiled pan; set aside.\n2. Stir-fry garlic and vegetables 3 minutes.\n3. Add rice and fry until hot and a little crisp.\n4. Add soy, sesame oil, eggs and green onions."
+ },
+ {
+  "name": "Shrimp Tacos with Lime Slaw",
+  "tags": [
+   "mexican",
+   "seafood",
+   "quick"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 8,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 1/2 lb shrimp, peeled",
+   "2 tsp chili powder",
+   "1 bag coleslaw mix",
+   "1/3 cup sour cream",
+   "2 limes",
+   "12 corn tortillas",
+   "1 avocado",
+   "1/2 bunch cilantro"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Toss coleslaw with sour cream, lime juice and cilantro.\n2. Season shrimp with chili powder and salt; sear 2 minutes a side.\n3. Warm tortillas and fill with shrimp, slaw and avocado."
+ },
+ {
+  "name": "Classic Beef Chili",
+  "tags": [
+   "comfort",
+   "make-ahead",
+   "gluten-free"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 45,
+  "hands_on_minutes": 15,
+  "servings": 8,
+  "ingredients": [
+   "1 1/2 lb lean ground beef",
+   "1 onion, diced",
+   "1 green bell pepper, diced",
+   "2 cans kidney beans, rinsed",
+   "1 (28 oz) can diced tomatoes",
+   "2 tbsp chili powder",
+   "1 tsp cumin",
+   "1 cup shredded cheddar",
+   "1/2 cup sour cream"
+  ],
+  "makes_leftovers": true,
+  "instructions": "1. Brown beef with onion and pepper.\n2. Add spices, tomatoes and beans; simmer 40 minutes.\n3. Serve with cheese and sour cream."
+ },
+ {
+  "name": "Greek Chicken Souvlaki Bowls",
+  "tags": [
+   "greek",
+   "healthy"
+  ],
+  "prep_minutes": 20,
+  "cook_minutes": 15,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 1/2 lb chicken breast, cubed",
+   "2 lemons",
+   "1 tsp dried oregano",
+   "1 cucumber",
+   "1 pint cherry tomatoes",
+   "1/2 red onion",
+   "1 cup tzatziki",
+   "1 cup feta cheese",
+   "2 cups rice",
+   "4 pita breads"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Marinate chicken in lemon, oregano, oil, salt 15 minutes. Start the rice.\n2. Cook chicken in a hot pan or grill 8–10 minutes.\n3. Chop cucumber, tomatoes and onion.\n4. Serve over rice with feta, tzatziki and warm pita."
+ },
+ {
+  "name": "Homemade Margherita Pizza Night",
+  "tags": [
+   "italian",
+   "kid-friendly",
+   "vegetarian"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 15,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "2 lb pizza dough",
+   "1 cup pizza sauce",
+   "2 cups shredded mozzarella",
+   "1 ball fresh mozzarella",
+   "1/2 bunch basil",
+   "2 tbsp olive oil"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Heat oven to 500°F with a pan or stone inside.\n2. Stretch dough, top with sauce and both cheeses.\n3. Bake 10–12 minutes; top with basil and a drizzle of oil."
+ },
+ {
+  "name": "Chicken Noodle Soup",
+  "tags": [
+   "soup",
+   "comfort",
+   "make-ahead"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 30,
+  "hands_on_minutes": 15,
+  "servings": 6,
+  "ingredients": [
+   "1 1/2 lb chicken thighs",
+   "8 cups chicken broth",
+   "3 carrots, sliced",
+   "3 stalks celery, sliced",
+   "1 onion, diced",
+   "3 cups egg noodles",
+   "1 tsp dried thyme",
+   "1/2 bunch parsley"
+  ],
+  "makes_leftovers": true,
+  "instructions": "1. Simmer chicken in broth with onion, carrot, celery and thyme 20 minutes.\n2. Shred chicken; return to the pot.\n3. Add noodles and cook 7 minutes. Finish with parsley."
+ },
+ {
+  "name": "Teriyaki Chicken Rice Bowls",
+  "tags": [
+   "asian",
+   "quick",
+   "kid-friendly"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 15,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 1/2 lb chicken thighs",
+   "1/2 cup teriyaki sauce",
+   "2 cups rice",
+   "2 cups broccoli florets",
+   "1 carrot, shredded",
+   "2 green onions, sliced",
+   "1 tbsp sesame seeds"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Start the rice.\n2. Sear chicken pieces until cooked, add teriyaki and simmer to glaze.\n3. Steam broccoli.\n4. Serve over rice with carrot, green onion and sesame seeds."
+ },
+ {
+  "name": "Lentil and Sweet Potato Curry",
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "curry",
+   "budget",
+   "make-ahead"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 30,
+  "hands_on_minutes": 15,
+  "servings": 6,
+  "ingredients": [
+   "1 cup red lentils",
+   "2 sweet potatoes, cubed",
+   "1 can coconut milk",
+   "1 (28 oz) can diced tomatoes",
+   "1 onion, diced",
+   "2 tbsp curry powder",
+   "3 cups baby spinach",
+   "2 cups basmati rice",
+   "4 naan breads"
+  ],
+  "makes_leftovers": true,
+  "instructions": "1. Soften onion with curry powder.\n2. Add sweet potato, lentils, tomatoes, coconut milk and 2 cups water; simmer 25 minutes.\n3. Stir in spinach. Serve with rice and naan."
+ },
+ {
+  "name": "Smash Burgers and Oven Fries",
+  "tags": [
+   "kid-friendly",
+   "comfort"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 30,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 1/2 lb ground beef",
+   "6 hamburger buns",
+   "6 slices cheddar cheese",
+   "2 lb russet potatoes",
+   "1 head iceberg lettuce",
+   "2 tomatoes",
+   "1 red onion",
+   "6 dill pickles"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Cut potatoes into fries, toss with oil and salt, bake at 425°F for 30 minutes.\n2. Roll beef into 12 balls; smash thin on a very hot pan, 2 minutes a side, cheese on top.\n3. Build burgers with the toppings."
+ },
+ {
+  "name": "Sausage and Pepper Sheet Pan",
+  "tags": [
+   "sheet-pan",
+   "easy",
+   "gluten-free"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 30,
+  "hands_on_minutes": 10,
+  "servings": 4,
+  "ingredients": [
+   "1 1/2 lb italian sausage",
+   "3 bell peppers, sliced",
+   "1 onion, sliced",
+   "1 1/2 lb baby potatoes, halved",
+   "2 tbsp olive oil",
+   "1 tsp italian seasoning"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Heat oven to 425°F.\n2. Toss everything with oil and seasoning on a sheet pan.\n3. Roast 30 minutes, turning once."
+ },
+ {
+  "name": "Breakfast for Dinner",
+  "tags": [
+   "vegetarian",
+   "quick",
+   "kid-friendly",
+   "budget"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 20,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "8 large eggs",
+   "1 lb bacon",
+   "2 cups pancake mix",
+   "1 1/2 cups milk",
+   "2 cups strawberries",
+   "1/2 cup maple syrup"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Bake bacon on a sheet at 400°F for 18 minutes.\n2. Mix and cook pancakes.\n3. Scramble the eggs.\n4. Serve with berries and syrup."
+ },
+ {
+  "name": "Garlic Butter Shrimp Pasta",
+  "tags": [
+   "seafood",
+   "pasta",
+   "quick"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 15,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 lb shrimp, peeled",
+   "1 lb linguine",
+   "4 tbsp butter",
+   "4 cloves garlic, minced",
+   "1 lemon",
+   "1/2 cup grated parmesan",
+   "1/2 bunch parsley",
+   "2 cups baby spinach"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Cook linguine; save 1 cup pasta water.\n2. Cook shrimp in butter with garlic 2 minutes a side.\n3. Add spinach, lemon and pasta, loosen with pasta water, finish with parmesan and parsley."
+ },
+ {
+  "name": "Korean Ground Beef Bowls",
+  "tags": [
+   "asian",
+   "quick",
+   "budget"
+  ],
+  "prep_minutes": 5,
+  "cook_minutes": 12,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "1 lb lean ground beef",
+   "3 tbsp soy sauce",
+   "2 tbsp brown sugar",
+   "1 tbsp sesame oil",
+   "3 cloves garlic, minced",
+   "1 tbsp fresh ginger, grated",
+   "2 cups jasmine rice",
+   "1 cucumber",
+   "4 green onions, sliced"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Start the rice.\n2. Brown beef with garlic and ginger.\n3. Add soy, sugar and sesame oil; simmer 2 minutes.\n4. Serve over rice with sliced cucumber and green onion."
+ },
+ {
+  "name": "Roast Chicken with Root Vegetables",
+  "tags": [
+   "sunday",
+   "comfort",
+   "gluten-free"
+  ],
+  "prep_minutes": 20,
+  "cook_minutes": 80,
+  "hands_on_minutes": 20,
+  "servings": 6,
+  "ingredients": [
+   "1 whole chicken",
+   "4 carrots",
+   "3 parsnips",
+   "1 1/2 lb yellow potatoes",
+   "1 onion",
+   "1 lemon",
+   "4 sprigs fresh rosemary",
+   "3 tbsp butter"
+  ],
+  "makes_leftovers": true,
+  "instructions": "1. Heat oven to 425°F.\n2. Cut vegetables into chunks and spread in a roasting pan.\n3. Rub chicken with butter, salt and pepper; stuff with lemon and rosemary; set on the vegetables.\n4. Roast about 80 minutes until 165°F in the thigh; rest 10 minutes."
+ },
+ {
+  "name": "Baked Chicken Parmesan",
+  "tags": [
+   "italian",
+   "kid-friendly"
+  ],
+  "prep_minutes": 20,
+  "cook_minutes": 25,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "2 large chicken breasts",
+   "1 cup panko breadcrumbs",
+   "1/2 cup grated parmesan",
+   "2 large eggs",
+   "2 cups marinara sauce",
+   "1 1/2 cups shredded mozzarella",
+   "1 lb spaghetti",
+   "1 bag caesar salad kit"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Heat oven to 425°F. Halve breasts into thin cutlets.\n2. Dip in egg, then panko mixed with parmesan; bake 15 minutes.\n3. Top with marinara and mozzarella; bake 10 more. Cook spaghetti and serve with the salad."
+ },
+ {
+  "name": "Minestrone Soup with Crusty Bread",
+  "tags": [
+   "vegetarian",
+   "soup",
+   "budget",
+   "make-ahead"
+  ],
+  "prep_minutes": 15,
+  "cook_minutes": 30,
+  "hands_on_minutes": 15,
+  "servings": 6,
+  "ingredients": [
+   "1 onion, diced",
+   "2 carrots, diced",
+   "2 stalks celery, diced",
+   "1 zucchini, diced",
+   "1 can cannellini beans",
+   "1 (28 oz) can diced tomatoes",
+   "6 cups vegetable broth",
+   "1 cup small pasta",
+   "2 cups baby spinach",
+   "1 baguette"
+  ],
+  "makes_leftovers": true,
+  "instructions": "1. Soften onion, carrot and celery.\n2. Add zucchini, tomatoes, broth and beans; simmer 15 minutes.\n3. Add pasta for 8 minutes, then spinach. Serve with bread."
+ },
+ {
+  "name": "Steak Night with Baked Potatoes",
+  "tags": [
+   "treat",
+   "gluten-free"
+  ],
+  "prep_minutes": 10,
+  "cook_minutes": 50,
+  "hands_on_minutes": 20,
+  "servings": 4,
+  "ingredients": [
+   "4 striploin steaks",
+   "4 russet potatoes",
+   "1/2 cup sour cream",
+   "4 green onions, sliced",
+   "1 lb asparagus",
+   "2 tbsp butter"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Bake potatoes at 425°F for 50 minutes.\n2. Bring steaks to room temperature, season well.\n3. Sear 3–4 minutes a side for medium-rare; rest with butter on top.\n4. Roast asparagus for the last 10 minutes."
+ },
+ {
+  "name": "Leftover Remix Fried Rice",
+  "tags": [
+   "leftovers",
+   "quick",
+   "budget"
+  ],
+  "prep_minutes": 5,
+  "cook_minutes": 10,
+  "hands_on_minutes": null,
+  "servings": 4,
+  "ingredients": [
+   "4 cups cooked rice",
+   "2 cups leftover cooked meat",
+   "2 large eggs",
+   "1 cup frozen peas",
+   "2 tbsp soy sauce"
+  ],
+  "makes_leftovers": false,
+  "instructions": "1. Scramble eggs and set aside.\n2. Fry rice with leftovers and peas until hot.\n3. Add soy and eggs."
+ }
+]
