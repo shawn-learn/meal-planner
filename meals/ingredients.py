@@ -276,14 +276,35 @@ def tokens(text: str) -> set[str]:
     return set(normalize(text).split())
 
 
+# Meats and fish: a product naming one the item doesn't ("Ground Beef & Pork") is a blend.
+MEATS = {
+    "chicken", "beef", "pork", "turkey", "lamb", "veal", "bison", "salmon", "shrimp", "cod",
+    "tilapia", "tuna", "halibut", "haddock", "sole", "trout", "crab", "lobster",
+}  # fmt: skip
+# Words that turn an ingredient into a different product ("Chicken Noodle Soup",
+# "Salmon Flavour Cat Treats").
+OTHER_PRODUCT = {
+    "soup", "broth", "stock", "flavour", "flavor", "flavoured", "flavored", "seasoning",
+    "chip", "cracker", "nugget", "treat", "cat", "dog", "pet", "kibble", "pizza", "taco",
+    "burrito", "dumpling", "pie", "sandwich", "wrap", "salad", "kit", "meal", "entree",
+    "bouillon", "gravy", "jerky", "snack", "bar", "candy", "mix",
+}  # fmt: skip
+
+
 def matches(item: str, product: str) -> bool:
     """Does a flyer `product` name offer this shopping `item`? Every word of the item has to
     appear in the product, so "chicken thigh" matches "Chicken Thighs Value Pack" but "chicken
-    breast" doesn't, and "pepper" doesn't match "Pepperoni"."""
+    breast" doesn't, and "pepper" doesn't match "Pepperoni". Blends ("Ground Beef & Pork") and
+    prepared foods ("Chicken Noodle Soup") don't count unless the item asks for them."""
     want = set(item.split())
     if not want:
         return False
-    return want <= tokens(product)
+    have = tokens(product)
+    if not want <= have:
+        return False
+    if want & MEATS and (have & MEATS) - want:
+        return False
+    return not (have & OTHER_PRODUCT) - want
 
 
 def is_pantry(item: str, pantry: list[str]) -> bool:

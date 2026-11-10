@@ -98,6 +98,11 @@ class Household:
     postal_code: str = ""
     # Flipp merchant names to watch, matched case-insensitively as substrings.
     stores: list[str] = field(default_factory=lambda: ["Costco", "Safeway", "Co-op"])
+    # Merchants to skip even when they match a store above ("Sobeys & Safeway Liquor").
+    exclude_stores: list[str] = field(default_factory=lambda: ["Liquor", "Pharmacy"])
+    # Also read Costco's weekly sale list from cocowest.ca (Western Canada), since Costco's
+    # own flyer barely shows up in Flipp.
+    cocowest: bool = True
     # Extra things to watch for deals even when no recipe needs them yet.
     watch: list[str] = field(default_factory=list)
 
@@ -157,7 +162,8 @@ def _time(value: Any, default: _dt.time) -> _dt.time:
 def load_household(path: Path) -> Household:
     if not path.exists():
         return Household(pantry=list(DEFAULT_PANTRY))
-    raw = tomllib.loads(path.read_text(encoding="utf-8"))
+    # utf-8-sig: PowerShell 5's `Set-Content -Encoding utf8` writes a byte-order mark.
+    raw = tomllib.loads(path.read_text(encoding="utf-8-sig"))
     members = [
         Member(
             name=str(m["name"]),
@@ -181,6 +187,8 @@ def load_household(path: Path) -> Household:
         leftovers_ok=bool(dinner.get("leftovers_ok", True)),
         postal_code=str(deals.get("postal_code", "")).replace(" ", "").upper(),
         stores=[str(s) for s in deals.get("stores", ["Costco", "Safeway", "Co-op"])],
+        exclude_stores=[str(s) for s in deals.get("exclude_stores", ["Liquor", "Pharmacy"])],
+        cocowest=bool(deals.get("cocowest", True)),
         watch=[str(s) for s in deals.get("watch", [])],
         pantry=[str(s).lower() for s in kitchen.get("pantry", DEFAULT_PANTRY)],
         avoid=[str(s).lower() for s in kitchen.get("avoid", [])],

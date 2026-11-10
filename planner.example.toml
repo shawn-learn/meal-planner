@@ -33,6 +33,10 @@ postal_code = "T3A 0A0" # your postal code, so the flyers are for your stores
 stores = ["Costco", "Safeway", "Calgary Co-op"]
 # Watch these even when no recipe needs them yet.
 watch = ["chicken breast", "ground beef", "salmon", "pork tenderloin"]
+# Skip merchants whose name contains any of these ("Sobeys & Safeway Liquor").
+exclude_stores = ["Liquor", "Pharmacy"]
+# Costco's weekly sale items barely show up in Flipp; read them from cocowest.ca instead.
+cocowest = true
 
 [kitchen]
 # Always in the house; never put on the list.

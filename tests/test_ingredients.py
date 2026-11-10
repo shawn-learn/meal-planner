@@ -41,3 +41,12 @@ def test_format_quantity() -> None:
     assert ing.format_quantity(0.25, "cup") == "1/4 cup"
     assert ing.format_quantity(3, None) == "3"
     assert ing.format_quantity(None, "cup") == ""
+
+
+def test_matches_rejects_blends_and_prepared_food() -> None:
+    assert not ing.matches("ground beef", "Ground Beef & Pork Blend")
+    assert not ing.matches("chicken", "Campbell's Chicken Noodle Soup")
+    assert not ing.matches("salmon", "Salmon Flavour Cat Treats")
+    assert not ing.matches("chicken", "Don Miguel Mini Chicken Tacos")
+    assert ing.matches("pork chop", "Fresh Pork Loin Chops")
+    assert ing.matches("chicken breast", "COMPLIMENTS Fresh AIR-CHILLED Chicken Breast Halves")

@@ -132,3 +132,10 @@ def test_recently_served_is_held_back(make_planner) -> None:  # type: ignore[no-
     one = {m["recipe"]["name"] for m in p.plan(MONDAY)["meals"]}
     two = {m["recipe"]["name"] for m in p.plan(MONDAY + dt.timedelta(days=7))["meals"]}
     assert len(one & two) <= 1
+
+
+def test_start_time_formats_on_every_platform() -> None:
+    from meals.planner import _fmt
+
+    assert _fmt(dt.time(16, 0)) == "4:00 pm"
+    assert _fmt(dt.time(17, 30)) == "5:30 pm"

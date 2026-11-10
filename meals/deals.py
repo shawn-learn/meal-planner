@@ -13,7 +13,7 @@ import httpx
 from meals import ingredients as ing
 from meals.config import Household
 from meals.db import DB
-from meals.sources import flipp
+from meals.sources import cocowest, flipp
 
 
 def shopping_items(db: DB, household: Household) -> list[str]:
@@ -27,12 +27,24 @@ def shopping_items(db: DB, household: Household) -> list[str]:
     return sorted(i for i in items if i)
 
 
+def match_to_items(deals: list[flipp.Deal], items: list[str]) -> list[flipp.Deal]:
+    """Keep the deals (from a whole-flyer source) that offer something the recipes use, each
+    tagged with that item as its query."""
+    out: list[flipp.Deal] = []
+    for d in deals:
+        hit = next((i for i in items if ing.matches(i, d.name)), None)
+        if hit:
+            d.query = hit
+            out.append(d)
+    return out
+
+
 def store_deals(db: DB, deals: list[flipp.Deal], source: str = "flipp") -> int:
     saved = 0
     with db.tx() as c:
         for d in deals:
             # The search is loose; keep only products that really are the thing searched for.
-            if source == "flipp" and not ing.matches(d.query, d.name):
+            if source in ("flipp", "cocowest") and not ing.matches(d.query, d.name):
                 continue
             c.execute(
                 """INSERT INTO deals (store, name, price, price_text, regular_price, unit,
@@ -78,13 +90,29 @@ async def refresh(
         return {"ok": False, "error": "Set deals.postal_code in planner.toml first."}
     queries = shopping_items(db, household)
     found, failed = await flipp.search_many(
-        household.postal_code, queries, household.stores, timeout_s, transport
+        household.postal_code,
+        queries,
+        household.stores,
+        timeout_s,
+        transport,
+        exclude=household.exclude_stores,
     )
     prune(db, today)
     saved = store_deals(db, found)
-    db.log("deals", queries=len(queries), saved=saved, failed=len(failed))
+    result: dict[str, Any] = {"searched": len(queries), "saved": saved}
+
+    if household.cocowest and any("costco" in s.lower() for s in household.stores):
+        try:
+            costco = await cocowest.fetch(timeout_s, transport)
+            matched = match_to_items(costco, queries)
+            result["costco_cocowest"] = store_deals(db, matched, source="cocowest")
+        except (httpx.HTTPError, ValueError) as exc:
+            result["costco_cocowest_error"] = str(exc) or type(exc).__name__
+
+    total = saved + int(result.get("costco_cocowest", 0))
+    db.log("deals", queries=len(queries), saved=total, failed=len(failed))
     ok = not (failed and len(failed) == len(queries))
-    result: dict[str, Any] = {"ok": ok, "searched": len(queries), "saved": saved}
+    result["ok"] = ok
     if failed:
         result["failed"] = failed[:10]
         result["failed_count"] = len(failed)
@@ -123,12 +151,19 @@ def add_manual(
     store_deals(db, [deal], source="manual")
 
 
-def current(db: DB, today: _dt.date) -> list[dict[str, Any]]:
+def shop_day(week_start: _dt.date, today: _dt.date) -> _dt.date:
+    """When the week's shopping happens: today for a week already under way, otherwise the
+    weekend before it. A deal only counts if it's on then."""
+    return max(today, week_start - _dt.timedelta(days=2))
+
+
+def current(db: DB, day: _dt.date) -> list[dict[str, Any]]:
+    """Deals on sale on `day` (or starting the next day, as flyers often change overnight)."""
     return db.all(
         "SELECT * FROM deals WHERE (valid_to IS NULL OR valid_to >= ?) "
         "AND (valid_from IS NULL OR valid_from <= ?) ORDER BY store, name",
-        today.isoformat(),
-        (today + _dt.timedelta(days=6)).isoformat(),
+        day.isoformat(),
+        (day + _dt.timedelta(days=1)).isoformat(),
     )
 
 

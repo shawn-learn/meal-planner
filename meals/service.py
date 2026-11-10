@@ -65,13 +65,15 @@ class Planner:
 
     def plan(self, start: _dt.date | None = None, keep_locked: bool = True) -> dict[str, Any]:
         start = start or self.upcoming_week()
-        planner.plan_week(self.db, self.household, start, self.evenings(start), keep_locked)
+        planner.plan_week(
+            self.db, self.household, start, self.evenings(start), keep_locked, self.today()
+        )
         return self.week(start)
 
     def week(self, start: _dt.date | None = None) -> dict[str, Any]:
         start = start or self.upcoming_week()
         choices = planner.load_choices(self.db, start)
-        current = deal_mod.current(self.db, start)
+        current = deal_mod.current(self.db, deal_mod.shop_day(start, self.today()))
         lst = shopping.build(choices, self.household, current)
         cooks = Counter(c.cook for c in choices if c.cook and c.kind == "cook")
         plan_row = self.db.one("SELECT * FROM plans WHERE week_start = ?", start.isoformat())
@@ -127,7 +129,9 @@ class Planner:
         start = self.week_for(day)
         if not planner.load_choices(self.db, start):
             raise ValueError("That week isn't planned yet.")
-        planner.swap(self.db, self.household, start, day, self.evenings(start), recipe_id)
+        planner.swap(
+            self.db, self.household, start, day, self.evenings(start), recipe_id, self.today()
+        )
         return self.week(start)
 
     def lock(self, day: _dt.date, locked: bool) -> dict[str, Any]:

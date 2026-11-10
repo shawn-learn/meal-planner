@@ -196,7 +196,8 @@ def pick_cook(
 
 
 def _fmt(t: _dt.time) -> str:
-    return t.strftime("%-I:%M %p").lower() if hasattr(t, "strftime") else str(t)
+    # Not "%-I": Windows' strftime doesn't support it.
+    return t.strftime("%I:%M %p").lstrip("0").lower()
 
 
 def _start_by(household: Household, day: _dt.date, minutes: int) -> _dt.time:
@@ -217,11 +218,14 @@ def _last_served(db: DB, before: _dt.date) -> dict[int, _dt.date]:
     return {r["recipe_id"]: _dt.date.fromisoformat(r["day"]) for r in rows}
 
 
-def build_context(db: DB, household: Household, start: _dt.date) -> Context:
+def build_context(
+    db: DB, household: Household, start: _dt.date, today: _dt.date | None = None
+) -> Context:
+    shop = deal_mod.shop_day(start, today or start)
     return Context(
         household=household,
         weights=learn.weights(db),
-        deals=deal_mod.current(db, start),
+        deals=deal_mod.current(db, shop),
         last_served=_last_served(db, start),
         rng=random.Random(start.toordinal()),
         has_history=bool(db.one("SELECT 1 AS x FROM ratings LIMIT 1 OFFSET 4")),
@@ -323,8 +327,9 @@ def plan_week(
     start: _dt.date,
     evenings: dict[_dt.date, list[Evening]],
     keep_locked: bool = True,
+    today: _dt.date | None = None,
 ) -> list[Choice]:
-    ctx = build_context(db, household, start)
+    ctx = build_context(db, household, start, today)
     candidates = recipe_mod.list_all(db)
     existing = {c.day: c for c in load_choices(db, start)} if keep_locked else {}
     week: list[Choice] = []
@@ -350,12 +355,13 @@ def swap(
     day: _dt.date,
     evenings: dict[_dt.date, list[Evening]],
     recipe_id: int | None = None,
+    today: _dt.date | None = None,
 ) -> Choice:
     """Replace one night's dinner: with `recipe_id` if given, else the next best option."""
     week = load_choices(db, start)
     current = next((c for c in week if c.day == day), None)
     others = [c for c in week if c.day != day]
-    ctx = build_context(db, household, start)
+    ctx = build_context(db, household, start, today)
     if current and current.recipe and current.kind == "cook":
         learn.swapped_out(db, current.recipe)
     if recipe_id is not None:
