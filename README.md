@@ -43,7 +43,8 @@ uv run meals plan                        # plan the upcoming week
 uv run meals serve                       # http://127.0.0.1:8200
 ```
 
-On Windows, double-click `start.bat` (and `stop.bat`). Setting up calendars, Keep, the weekly
+On Windows, double-click `start.bat` to run it in the background and `stop.bat` to stop it
+(`./start.sh` and `./stop.sh` elsewhere). Setting up calendars, Keep, the weekly
 run, Claude and Daily Dashboard is in [docs/SETUP.md](docs/SETUP.md).
 
 ## What's on the page
@@ -63,7 +64,7 @@ run, Claude and Daily Dashboard is in [docs/SETUP.md](docs/SETUP.md).
 
 | Command | What it does |
 | --- | --- |
-| `meals serve` / `meals stop` | Web page and API on port 8200 |
+| `meals serve` / `meals stop` / `meals status` | Web page and API on port 8200 |
 | `meals weekly` | Check deals, plan the upcoming week, update Keep. Schedule this. |
 | `meals plan [--week DATE] [--fresh]` | Plan a week (kept dinners stay unless `--fresh`) |
 | `meals show [--week DATE]` | Print the plan |

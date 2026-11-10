@@ -68,7 +68,24 @@ Home's are never touched, and something already on the list isn't added twice.
 
 Try `uv run meals keep-sync --dry-run` first to see what it would do.
 
-## 5. Weekly run and starting with Windows
+## 5. Starting, stopping, the weekly run and starting with Windows
+
+Double-click **`start.bat`** to start the planner in the background and open
+http://127.0.0.1:8200/. It waits until the page answers, and running it again while the planner is
+already up just opens the page. **`stop.bat`** stops it. Both work from a terminal too:
+
+```powershell
+.\start.bat               # start (or just open the page if it's running)
+.\start.bat --no-browser  # start without opening the page (used at logon below)
+.\stop.bat                # stop
+uv run meals status       # running, starting, or not running
+```
+
+The server writes its process id to `data\meals.pid` and its log to `data\meals.log`. If
+`meals stop` finds the port busy with no process id on file, end the `pythonw.exe` running meals in
+Task Manager. On macOS or Linux, use `./start.sh` and `./stop.sh` instead.
+
+To start it when you sign in and run the week every Saturday:
 
 ```powershell
 $repo = (Get-Location).Path
