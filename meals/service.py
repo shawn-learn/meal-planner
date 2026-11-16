@@ -10,6 +10,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from meals import deals as deal_mod
+from meals import ingredients as ing
 from meals import keep, learn, planner, schedule, shopping
 from meals import recipes as recipe_mod
 from meals.config import Household, Settings, load_household, secret
@@ -75,7 +76,7 @@ class Planner:
         choices = planner.load_choices(self.db, start)
         shop = deal_mod.shop_day(start, self.today())
         current = deal_mod.current(self.db, shop)
-        lst = shopping.build(choices, self.household, current, shop)
+        lst = shopping.build(choices, self.household, current, shop, self._marks(start))
         cooks = Counter(c.cook for c in choices if c.cook and c.kind == "cook")
         plan_row = self.db.one("SELECT * FROM plans WHERE week_start = ?", start.isoformat())
         return {
@@ -205,8 +206,6 @@ class Planner:
     def deals(self, query: str | None = None) -> list[dict[str, Any]]:
         rows = deal_mod.current(self.db, self.today())
         if query:
-            from meals import ingredients as ing
-
             q = ing.normalize(query)
             rows = [d for d in rows if ing.matches(q, d["name"])]
         return rows
@@ -215,6 +214,69 @@ class Planner:
         self, store: str, name: str, price: float | None, valid_to: _dt.date | None, note: str
     ) -> None:
         deal_mod.add_manual(self.db, store, name, price, valid_to, note)
+
+    # ── What's already in the house ─────────────────────────────────────────
+
+    def _marks(self, start: _dt.date) -> dict[str, bool]:
+        """This week's ticks win over "always" ones."""
+        rows = self.db.all(
+            "SELECT week_start, item, have FROM list_marks WHERE week_start IN ('always', ?)",
+            start.isoformat(),
+        )
+        rows.sort(key=lambda r: r["week_start"] != "always")
+        return {r["item"]: bool(r["have"]) for r in rows}
+
+    def find_list_item(self, name: str, start: _dt.date | None = None) -> str:
+        """The shopping-list item someone means by `name` ("chicken thighs" → "chicken thigh"),
+        or the normalized name when it isn't on this week's list."""
+        lst = self.week(start)["shopping"]
+        items: list[str] = [r["item"] for r in lst["items"] + lst["have"]]
+        wanted = ing.normalize(name)
+        if wanted in items:
+            return wanted
+        words = set(wanted.split())
+        close = [i for i in items if words and words <= set(i.split())]
+        if len(close) == 1:
+            return close[0]
+        return wanted
+
+    def mark_have(
+        self,
+        item: str,
+        have: bool = True,
+        start: _dt.date | None = None,
+        always: bool = False,
+    ) -> dict[str, Any]:
+        """Tick an item off the list because it's already in the house (have=True), or put it
+        back on (have=False). `always` remembers it for every week, like a pantry staple."""
+        start = start or self.upcoming_week()
+        name = self.find_list_item(item, start)
+        if not name:
+            raise ValueError("Which item?")
+        with self.db.tx() as c:
+            if always:
+                c.execute(
+                    "INSERT INTO list_marks (week_start, item, have) VALUES ('always', ?, ?) "
+                    "ON CONFLICT(week_start, item) DO UPDATE SET have = excluded.have, "
+                    "updated_at = datetime('now')",
+                    (name, int(have)),
+                )
+                # An "always" choice replaces this week's one.
+                c.execute(
+                    "DELETE FROM list_marks WHERE week_start = ? AND item = ?",
+                    (start.isoformat(), name),
+                )
+            else:
+                c.execute(
+                    "INSERT INTO list_marks (week_start, item, have) VALUES (?, ?, ?) "
+                    "ON CONFLICT(week_start, item) DO UPDATE SET have = excluded.have, "
+                    "updated_at = datetime('now')",
+                    (start.isoformat(), name, int(have)),
+                )
+        self.db.log("have", item=name, have=have, always=always, week=start.isoformat())
+        week = self.week(start)
+        week["marked"] = name
+        return week
 
     # ── Keep ────────────────────────────────────────────────────────────────
 
@@ -233,6 +295,8 @@ class Planner:
             s.keep_state,
             dry_run,
         )
+        # Ticked off as already in the house: left off Keep (and taken off if it was there).
+        result["have"] = [r["item"] for r in lst["have"] if not r["staple"]]
         if not dry_run:
             self.db.log("keep", added=len(result["add"]), removed=len(result["remove"]))
         return result
@@ -264,7 +328,12 @@ class Planner:
             }
 
         deals_used = [
-            {"item": i["item"], "store": i["store"], "price_text": i["deal"]["price_text"]}
+            {
+                "item": i["item"],
+                "store": i["store"],
+                "price_text": i["deal"]["price_text"],
+                "also": [x["store"] for x in i["sales"][1:]],
+            }
             for i in week["shopping"]["items"]
             if i["deal"]
         ]
@@ -286,6 +355,7 @@ class Planner:
                 "count": week["shopping"]["count"],
                 "on_sale": week["shopping"]["on_sale"],
                 "estimated_savings": week["shopping"]["estimated_savings"],
+                "have": week["shopping"]["have_count"],
             },
             "deals": deals_used[:5],
             "to_rate": self.to_rate()[:3],

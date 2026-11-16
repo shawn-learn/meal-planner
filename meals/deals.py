@@ -190,6 +190,29 @@ def for_dinner(deals: list[dict[str, Any]], day: _dt.date, shop: _dt.date) -> li
     return [d for d in deals if on_for_dinner(d, day, shop)]
 
 
+def _price_key(d: dict[str, Any]) -> tuple[bool, float]:
+    return (d["price"] is None, d["price"] or 0)
+
+
+def _with_savings(d: dict[str, Any]) -> dict[str, Any]:
+    out = dict(d)
+    out["savings"] = (
+        round(out["regular_price"] - out["price"], 2)
+        if out.get("regular_price") and out.get("price")
+        else None
+    )
+    return out
+
+
+def by_store(item: str, deals: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Every store that has `item` on sale, with its cheapest offer there, cheapest store
+    first."""
+    cheapest: dict[str, dict[str, Any]] = {}
+    for d in sorted((d for d in deals if ing.matches(item, d["name"])), key=_price_key):
+        cheapest.setdefault(d["store"], d)
+    return [_with_savings(d) for d in sorted(cheapest.values(), key=_price_key)]
+
+
 def best_by_item(items: list[str], deals: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """For each shopping item, the cheapest current deal that offers it."""
     best: dict[str, dict[str, Any]] = {}
@@ -197,13 +220,8 @@ def best_by_item(items: list[str], deals: list[dict[str, Any]]) -> dict[str, dic
         offers = [d for d in deals if ing.matches(item, d["name"])]
         if not offers:
             continue
-        offers.sort(key=lambda d: (d["price"] is None, d["price"] or 0))
-        top = dict(offers[0])
-        top["savings"] = (
-            round(top["regular_price"] - top["price"], 2)
-            if top.get("regular_price") and top.get("price")
-            else None
-        )
+        offers.sort(key=_price_key)
+        top = _with_savings(offers[0])
         top["others"] = len(offers) - 1
         best[item] = top
     return best

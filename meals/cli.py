@@ -97,6 +97,15 @@ def main(argv: list[str] | None = None) -> None:
     r.add_argument("stars", type=int)
     r.add_argument("--note")
 
+    li = sub.add_parser("list", help="Show the shopping list, with where things are on sale")
+    li.add_argument("--week")
+
+    h = sub.add_parser("have", help="Take an item off the list because you already have it")
+    h.add_argument("item")
+    h.add_argument("--need", action="store_true", help="Put it back on the list instead")
+    h.add_argument("--always", action="store_true", help="Remember it for every week")
+    h.add_argument("--week")
+
     k = sub.add_parser("keep-sync", help="Put the list on Google Keep")
     k.add_argument("--week")
     k.add_argument("--dry-run", action="store_true")
@@ -189,7 +198,7 @@ def main(argv: list[str] | None = None) -> None:
         run()
         return
 
-    from meals.mcp_server import _week_text
+    from meals.mcp_server import _list_text, _week_text
 
     pl = _planner()
     if a.cmd == "weekly":
@@ -215,6 +224,14 @@ def main(argv: list[str] | None = None) -> None:
     elif a.cmd == "rate":
         rec = pl.rate(a.recipe_id, a.stars, note=a.note)
         print(f"{rec['name']}: {rec['ratings']['average']:.1f}★")
+    elif a.cmd == "list":
+        week = _date(a.week)
+        print(_list_text(pl.week(pl.week_for(week) if week else None)["shopping"]))
+    elif a.cmd == "have":
+        week = _date(a.week)
+        start = pl.week_for(week) if week else None
+        out = pl.mark_have(a.item, not a.need, start, a.always)
+        print(_list_text(out["shopping"]))
     elif a.cmd == "keep-sync":
         week = _date(a.week)
         print(

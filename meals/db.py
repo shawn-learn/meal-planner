@@ -99,6 +99,16 @@ CREATE TABLE IF NOT EXISTS plan_meals (
     PRIMARY KEY (week_start, day)
 );
 
+-- Things on the shopping list you said you already have (have = 1), or a pantry staple you're
+-- out of (have = 0). week_start is the plan's Monday, or 'always' for every week.
+CREATE TABLE IF NOT EXISTS list_marks (
+    week_start TEXT NOT NULL,
+    item TEXT NOT NULL,
+    have INTEGER NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (week_start, item)
+);
+
 CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY,
     at TEXT NOT NULL DEFAULT (datetime('now')),

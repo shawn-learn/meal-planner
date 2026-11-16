@@ -12,6 +12,7 @@ from typing import Any
 
 from mcp.server.mcpserver import MCPServer
 
+from meals import shopping
 from meals.config import get_settings
 from meals.keep import KeepError
 from meals.service import Planner
@@ -152,20 +153,54 @@ async def check_flyers() -> str:
     return f"Searched {r['searched']} items; {r['saved']} deals at your stores."
 
 
-@mcp.tool()
-def shopping_list(week_start: str | None = None) -> str:
-    """The week's shopping list grouped by store, with deals."""
-    p = planner()
-    start = p.week_for(_dt.date.fromisoformat(week_start)) if week_start else None
-    sh = p.week(start)["shopping"]
+def _list_text(sh: dict[str, Any]) -> str:
     lines: list[str] = []
     for g in sh["by_store"]:
         lines.append(f"{g['store']}:")
         for i in g["items"]:
-            deal = f" ({i['deal']['price_text']})" if i["deal"] else ""
+            sale = shopping.sale_text(i)
             amount = f" — {i['amount']}" if i["amount"] else ""
-            lines.append(f"  - {i['item']}{amount}{deal}")
-    return "\n".join(lines) or "Nothing to buy."
+            lines.append(f"  - {i['item']}{amount}" + (f" (on sale: {sale})" if sale else ""))
+    if not lines:
+        lines.append("Nothing to buy.")
+    mine = [i["item"] for i in sh["have"] if not i["staple"]]
+    staples = [i["item"] for i in sh["have"] if i["staple"]]
+    if mine:
+        lines.append("Already have (not on the list): " + ", ".join(mine))
+    if staples:
+        lines.append("Pantry, assumed on hand: " + ", ".join(staples))
+    return "\n".join(lines)
+
+
+@mcp.tool()
+def shopping_list(week_start: str | None = None) -> str:
+    """The week's shopping list grouped by the cheapest store, with every store that has each
+    item on sale, and what's left off because it's already in the house."""
+    p = planner()
+    start = p.week_for(_dt.date.fromisoformat(week_start)) if week_start else None
+    return _list_text(p.week(start)["shopping"])
+
+
+@mcp.tool()
+def have_item(
+    item: str, have: bool = True, always: bool = False, week_start: str | None = None
+) -> str:
+    """Take an item off the shopping list because it's already in the house (have=true), or
+    put it back on (have=false, also for a pantry staple you've run out of). always=true
+    remembers it every week. Re-send the list to Keep afterwards to update it."""
+    p = planner()
+    start = p.week_for(_dt.date.fromisoformat(week_start)) if week_start else None
+    try:
+        week = p.mark_have(item, have, start, always)
+    except ValueError as exc:
+        return str(exc)
+    name = week["marked"]
+    sh = week["shopping"]
+    on_list = any(r["item"] == name for r in sh["items"] + sh["have"])
+    when = "every week" if always else "this week"
+    verb = "Off the list" if have else "Back on the list"
+    note = "" if on_list else " (it isn't on this week's list, but I'll remember)"
+    return f"{verb} {when}: {name}{note}. {sh['count']} items to buy."
 
 
 @mcp.tool()
@@ -176,7 +211,10 @@ def send_list_to_keep(dry_run: bool = False) -> str:
     except KeepError as exc:
         return str(exc)
     verb = "Would add" if dry_run else "Added"
-    return f"{verb} {len(r['add'])}, removed {len(r['remove'])} old items. {r['link']}"
+    text = f"{verb} {len(r['add'])}, removed {len(r['remove'])} old items."
+    if r.get("have"):
+        text += f" Left off (already have): {', '.join(r['have'])}."
+    return f"{text} {r['link']}"
 
 
 @mcp.tool()

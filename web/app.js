@@ -154,36 +154,93 @@ function dayCard(m, today) {
     </article>`;
 }
 
+function saleTags(i) {
+  if (!i.sales || !i.sales.length) return "";
+  return `<span class="sales">${i.sales
+    .map(
+      (x, n) =>
+        `<span class="tag-deal${n ? " also" : ""}" title="${esc(x.name)}">🏷️ ${esc(x.store)} ${esc(x.price_text)}${
+          !n && x.savings ? ` · save $${x.savings.toFixed(2)}` : ""
+        }</span>`
+    )
+    .join("")}</span>`;
+}
+
+function shopItem(i, have) {
+  const tip = have ? "Ticked off: you have it. Tick to buy it after all." : "Untick if you already have it";
+  return `
+    <li class="${have ? "have" : ""}">
+      <input type="checkbox" class="need" data-item="${esc(i.item)}" ${have ? "" : "checked"} title="${tip}" aria-label="Buy ${esc(i.item)}" />
+      <div class="what">
+        <b>${esc(i.item)}</b>
+        <span class="for">for ${esc(i.for.join(", "))}</span>
+        ${saleTags(i)}
+      </div>
+      <span class="amt">${esc(i.amount)}</span>
+      ${have && !i.staple ? `<button class="link" data-always="${esc(i.item)}" title="Never put it on the list">always have</button>` : ""}
+    </li>`;
+}
+
 function renderShopping() {
   const sh = state.week.shopping;
-  if (!sh.count) {
-    $("#shopping-body").innerHTML = '<p class="muted">Nothing to buy — the pantry has it covered.</p>';
-    return;
-  }
-  $("#shopping-body").innerHTML = sh.by_store
-    .map(
-      (g) => `
+  const have = sh.have || [];
+  const mine = have.filter((i) => !i.staple);
+  const staples = have.filter((i) => i.staple);
+  const buy = sh.count
+    ? sh.by_store
+        .map(
+          (g) => `
       <div class="store">
         <h3><span>${esc(g.store)}</span><span>${g.items.length}</span></h3>
-        <ul class="items">
-          ${g.items
-            .map(
-              (i) => `
-            <li>
-              <div class="what">
-                <b>${esc(i.item)}</b>
-                <span class="for">for ${esc(i.for.join(", "))}</span>
-                ${i.deal ? `<span class="tag-deal" title="${esc(i.deal.name)}">🏷️ ${esc(i.deal.price_text)}${i.deal.savings ? ` · save $${i.deal.savings.toFixed(2)}` : ""}</span>` : ""}
-              </div>
-              <span class="amt">${esc(i.amount)}</span>
-            </li>`
-            )
-            .join("")}
-        </ul>
+        <ul class="items">${g.items.map((i) => shopItem(i, false)).join("")}</ul>
       </div>`
-    )
-    .join("");
+        )
+        .join("")
+    : '<p class="muted">Nothing to buy — you have it all.</p>';
+  const haveHtml = mine.length
+    ? `<div class="store have-group">
+        <h3><span>Already have</span><span>${mine.length}</span></h3>
+        <ul class="items">${mine.map((i) => shopItem(i, true)).join("")}</ul>
+      </div>`
+    : "";
+  const staplesHtml = staples.length
+    ? `<details class="store have-group">
+        <summary><h3><span>Pantry (assumed on hand) ▸</span><span>${staples.length}</span></h3></summary>
+        <ul class="items">${staples.map((i) => shopItem(i, true)).join("")}</ul>
+      </details>`
+    : "";
+  $("#shopping-body").innerHTML =
+    `<p class="muted hint">Untick anything you already have. It stays off Keep.</p>` + buy + haveHtml + staplesHtml;
 }
+
+async function markHave(item, have, always = false) {
+  try {
+    state.week = await api("/api/shopping/have", {
+      method: "POST",
+      body: { item, have, always, week_start: state.start },
+    });
+    renderWeek();
+    toast(
+      always
+        ? `Won't put ${item} on the list again.`
+        : have
+          ? `${item}: off the list this week.`
+          : `${item}: back on the list.`
+    );
+  } catch (e) {
+    toast(e.message, 5000);
+    renderShopping();
+  }
+}
+
+$("#shopping-body").addEventListener("change", (e) => {
+  const box = e.target.closest("input.need");
+  if (box) markHave(box.dataset.item, !box.checked);
+});
+$("#shopping-body").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-always]");
+  if (b) markHave(b.dataset.always, true, true);
+});
 
 // Day actions (event delegation)
 $("#days").addEventListener("click", async (e) => {
@@ -236,6 +293,7 @@ $("#send-keep").addEventListener("click", (e) =>
       ${preview.add.length ? `<h3>Add ${preview.add.length}</h3><ul>${preview.add.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : "<p>Nothing new to add.</p>"}
       ${preview.remove.length ? `<h3>Take off ${preview.remove.length} from an older plan</h3><ul>${preview.remove.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
       ${preview.already_on_list.length ? `<p class="muted">Already on your list: ${esc(preview.already_on_list.join(", "))}</p>` : ""}
+      ${preview.have && preview.have.length ? `<p class="muted">Left off because you have them: ${esc(preview.have.join(", "))}</p>` : ""}
       <div class="day-actions"><button class="primary" id="keep-go">Update Keep</button><a href="${esc(preview.link)}" target="_blank" rel="noopener">Open list</a></div>`);
     $("#keep-go").addEventListener("click", (ev) =>
       busy(ev.currentTarget, async () => {
