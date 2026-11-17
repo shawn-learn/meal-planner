@@ -40,6 +40,9 @@ DEALS = [
     ("Costco", "Kirkland Shrimp Raw Peeled", 16.99, "$16.99", 21.99),
     ("Safeway", "Old El Paso Flour Tortillas", 2.99, "$2.99", 4.49),
     ("Calgary Co-op", "Baby Spinach Clamshell", 3.49, "$3.49", 4.99),
+    # The same thing at more than one store, to show every sale on the list.
+    ("Calgary Co-op", "Co-op Gold Chicken Thighs", 4.49, "$4.49/lb", 6.99),
+    ("Costco", "Kirkland Mini Sweet Peppers", 1.60, "$1.60 ea", 2.20),
 ]
 
 

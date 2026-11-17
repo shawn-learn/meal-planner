@@ -190,6 +190,14 @@ main { max-width: 1320px; margin: 0 auto; padding: 18px 20px 60px; }
 .items .what b { font-weight: 600; text-transform: capitalize; }
 .items .for { display: block; font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .items .amt { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
+.items input.need { margin-top: 4px; accent-color: var(--deal); width: 16px; height: 16px; flex: none; cursor: pointer; }
+.items li.have .what b, .items li.have .amt { text-decoration: line-through; color: var(--muted); }
+.have-group summary { list-style: none; cursor: pointer; }
+.have-group summary::-webkit-details-marker { display: none; }
+.hint { font-size: 0.8rem; margin: 0; }
+.sales { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.tag-deal.also { opacity: 0.8; }
+button.link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; padding: 0; font-size: 0.75rem; white-space: nowrap; }
 .tag-deal { display: inline-block; font-size: 0.75rem; color: var(--deal); background: var(--deal-bg); border-radius: 6px; padding: 1px 6px; margin-top: 2px; }
 
 /* Grid of cards */

@@ -61,6 +61,13 @@ class DealIn(BaseModel):
     note: str = ""
 
 
+class HaveIn(BaseModel):
+    item: str
+    have: bool = True
+    always: bool = False
+    week_start: _dt.date | None = None
+
+
 class SyncIn(BaseModel):
     week_start: _dt.date | None = None
     dry_run: bool = False
@@ -153,6 +160,14 @@ def create_app(planner: Planner | None = None, settings: Settings | None = None)
     def add_deal(body: DealIn) -> dict[str, bool]:
         p.add_deal(body.store, body.name, body.price, body.valid_to, body.note)
         return {"ok": True}
+
+    @app.post("/api/shopping/have")
+    def have(body: HaveIn) -> dict[str, Any]:
+        start = p.week_for(body.week_start) if body.week_start else None
+        try:
+            return p.mark_have(body.item, body.have, start, body.always)
+        except ValueError as exc:
+            raise bad(exc) from exc
 
     @app.post("/api/keep/sync")
     def sync(body: SyncIn) -> dict[str, Any]:
