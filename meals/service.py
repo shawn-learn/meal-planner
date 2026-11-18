@@ -10,6 +10,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from meals import deals as deal_mod
+from meals import family as family_mod
 from meals import ingredients as ing
 from meals import keep, learn, planner, schedule, shopping
 from meals import recipes as recipe_mod
@@ -78,6 +79,7 @@ class Planner:
         current = deal_mod.current(self.db, shop)
         lst = shopping.build(choices, self.household, current, shop, self._marks(start))
         cooks = Counter(c.cook for c in choices if c.cook and c.kind == "cook")
+        rules = family_mod.rules(self.db, self.household)
         plan_row = self.db.one("SELECT * FROM plans WHERE week_start = ?", start.isoformat())
         return {
             "today": self.today().isoformat(),
@@ -85,7 +87,7 @@ class Planner:
             "week_end": (start + _dt.timedelta(days=6)).isoformat(),
             "planned": bool(choices),
             "updated_at": plan_row["updated_at"] if plan_row else None,
-            "meals": [self._meal(c) for c in choices],
+            "meals": [self._meal(c, rules) for c in choices],
             "cooks": [{"name": n, "nights": k} for n, k in cooks.most_common()],
             "shopping": lst,
             "deals": {
@@ -95,8 +97,9 @@ class Planner:
             },
         }
 
-    def _meal(self, c: Choice) -> dict[str, Any]:
+    def _meal(self, c: Choice, rules: list[family_mod.Rule] | None = None) -> dict[str, Any]:
         r = c.recipe
+        bad = family_mod.conflicts(r, rules) if r and rules and c.kind != "skip" else []
         return {
             "day": c.day.isoformat(),
             "weekday": c.day.strftime("%A"),
@@ -121,6 +124,9 @@ class Planner:
                 if r
                 else None
             ),
+            # Normally empty: the planner never picks these. Only a dinner already eaten before
+            # the allergy was added can show one.
+            "allergens": [x.as_dict() for x in bad],
         }
 
     def _last_deals_check(self) -> str | None:
@@ -179,10 +185,18 @@ class Planner:
     # ── Recipes ─────────────────────────────────────────────────────────────
 
     def recipes(self) -> list[dict[str, Any]]:
-        return recipe_mod.list_all(self.db)
+        rules = family_mod.rules(self.db, self.household)
+        return [self._flag(r, rules) for r in recipe_mod.list_all(self.db)]
 
     def recipe(self, recipe_id: int) -> dict[str, Any] | None:
-        return recipe_mod.get(self.db, recipe_id)
+        r = recipe_mod.get(self.db, recipe_id)
+        return self._flag(r, family_mod.rules(self.db, self.household)) if r else None
+
+    @staticmethod
+    def _flag(recipe: dict[str, Any], rules: list[family_mod.Rule]) -> dict[str, Any]:
+        """Adds `allergens`: which of the family's allergies this recipe has, and in what."""
+        recipe["allergens"] = [c.as_dict() for c in family_mod.conflicts(recipe, rules)]
+        return recipe
 
     def import_recipe(self, url: str) -> dict[str, Any]:
         return recipe_mod.import_url(self.db, url, self.settings.http_timeout_s)
@@ -195,6 +209,73 @@ class Planner:
 
     def retire_recipe(self, recipe_id: int) -> None:
         recipe_mod.set_active(self.db, recipe_id, False)
+
+    # ── Family and allergies ────────────────────────────────────────────────
+
+    def family(self) -> dict[str, Any]:
+        rules = family_mod.rules(self.db, self.household)
+        recipes = recipe_mod.list_all(self.db)
+        blocked = [r["name"] for r in recipes if family_mod.conflicts(r, rules)]
+        return {
+            "members": family_mod.members(self.db, self.household),
+            "known_allergens": family_mod.catalog(),
+            "recipes_blocked": len(blocked),
+            "recipes_total": len(recipes),
+        }
+
+    def add_family_member(self, name: str) -> dict[str, Any]:
+        who = family_mod.add_member(self.db, name)
+        self.db.log("family-add", name=who)
+        out = self.family()
+        out["name"] = who
+        return out
+
+    def remove_family_member(self, name: str) -> dict[str, Any]:
+        """Takes someone (and their allergies) out of the profile. Cooks listed in
+        planner.toml stay listed, with only the allergies written there."""
+        if not family_mod.remove_member(self.db, name):
+            raise ValueError(f"{name} isn't in the family profile.")
+        self.db.log("family-remove", name=name)
+        return self.family()
+
+    def add_allergy(self, name: str, allergen: str) -> dict[str, Any]:
+        """Records the allergy (adding the person if they're new), then re-picks any dinner
+        from today on that has it, in this week's and the upcoming week's plans."""
+        who, stored = family_mod.add_allergy(self.db, name, allergen)
+        self.db.log("allergy-add", name=who, allergen=stored)
+        replaced: list[str] = []
+        for start in sorted({self.week_for(), self.upcoming_week()}):
+            if not planner.load_choices(self.db, start):
+                continue
+            days = planner.replace_unsafe(
+                self.db, self.household, start, self.evenings(start), self.today()
+            )
+            replaced += [d.isoformat() for d in days]
+        rule = family_mod.rule_for(stored, [who])
+        blocked = [
+            r["name"] for r in recipe_mod.list_all(self.db) if family_mod.conflicts(r, [rule])
+        ]
+        out = self.family()
+        out.update(
+            name=who,
+            allergen=stored,
+            known=family_mod.known(stored),
+            blocked=blocked,
+            replaced_days=replaced,
+        )
+        return out
+
+    def remove_allergy(self, name: str, allergen: str) -> dict[str, Any]:
+        if not family_mod.remove_allergy(self.db, name, allergen):
+            in_toml = any(
+                m.name.lower() == name.strip().lower()
+                and family_mod.canonical(allergen) in map(family_mod.canonical, m.allergies)
+                for m in self.household.members
+            )
+            where = " It's set in planner.toml; remove it there." if in_toml else ""
+            raise ValueError(f"{name} doesn't have {allergen} on file.{where}")
+        self.db.log("allergy-remove", name=name, allergen=family_mod.canonical(allergen))
+        return self.family()
 
     # ── Deals ───────────────────────────────────────────────────────────────
 

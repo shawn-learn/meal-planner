@@ -69,6 +69,7 @@ function showTab(name) {
   if (name === "recipes") loadRecipes();
   if (name === "deals") loadDeals();
   if (name === "taste") loadTaste();
+  if (name === "family") loadFamily();
 }
 $$(".tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
 
@@ -367,6 +368,7 @@ async function openRecipe(id) {
         ${r.source_url ? `<a href="${esc(r.source_url)}" target="_blank" rel="noopener">source</a>` : ""}
       </div>
       <div class="tags" style="margin-top:8px">${r.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+      ${allergyTags(r)}
       ${r.image_url ? `<img src="${esc(r.image_url)}" alt="" loading="lazy" />` : ""}
       <div class="cols">
         <div><h3>Ingredients</h3><ul>${r.ingredients.map((i) => `<li>${esc(i.line)}</li>`).join("")}</ul></div>
@@ -386,7 +388,11 @@ async function chooseRecipe(day) {
     const ql = q.toLowerCase();
     $("#pick-list").innerHTML = state.recipes
       .filter((r) => !ql || r.name.toLowerCase().includes(ql) || r.tags.some((t) => t.includes(ql)))
-      .map((r) => `<li><button data-pick="${r.id}"><span>${esc(r.name)}</span><span class="muted">${r.total_minutes} min</span></button></li>`)
+      .map((r) =>
+        r.allergens && r.allergens.length
+          ? `<li><button disabled title="${esc(allergyText(r))}"><span>${esc(r.name)}</span><span class="tag-allergy">⚠ ${esc(r.allergens.map((a) => a.allergen).join(", "))}</span></button></li>`
+          : `<li><button data-pick="${r.id}"><span>${esc(r.name)}</span><span class="muted">${r.total_minutes} min</span></button></li>`
+      )
       .join("");
   };
   render();
@@ -434,6 +440,7 @@ function renderRecipes() {
         <button class="meal-name title" data-recipe="${r.id}">${esc(r.name)}</button>
         <div class="meta"><span>⏱ ${r.total_minutes} min</span>${r.protein ? `<span>${esc(r.protein)}</span>` : ""}${r.ratings.count ? `<span>★ ${r.ratings.average.toFixed(1)}</span>` : ""}${r.makes_leftovers ? "<span>🥡 leftovers</span>" : ""}</div>
         <div class="tags">${r.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+        ${allergyTags(r)}
         <div class="day-actions"><button data-retire="${r.id}" class="small ghost">Stop suggesting</button></div>
       </article>`
       )
@@ -536,6 +543,97 @@ async function loadTaste() {
     <section class="card"><h2>Less of</h2>${bars(p.dislikes, true)}</section>
     <section class="card"><h2>How it learns</h2><p class="muted">Each rating nudges that recipe a lot, and its cuisine, style and main protein a little. Swapping a dinner out is a gentle "not this week". It's all stored in the planner's own database, so nothing is forgotten and no AI tokens are spent.</p></section>`;
 }
+
+// ── Family tab ───────────────────────────────────────────────────────────────
+function allergyText(r) {
+  return (r.allergens || []).map((a) => `${a.allergen} (${a.who.join(", ")}): ${a.item}`).join("; ");
+}
+function allergyTags(r) {
+  if (!r.allergens || !r.allergens.length) return "";
+  return `<div class="tags" title="${esc(allergyText(r))}">${r.allergens
+    .map((a) => `<span class="tag-allergy">⚠ ${esc(a.allergen)} · ${esc(a.who.join(", "))}</span>`)
+    .join("")}<span class="muted" style="font-size:.75rem">never planned</span></div>`;
+}
+
+async function loadFamily() {
+  state.family = await api("/api/family");
+  renderFamily();
+}
+function renderFamily() {
+  const f = state.family;
+  $("#family-meta").textContent = f.recipes_blocked
+    ? `${f.recipes_blocked} of ${f.recipes_total} recipes have someone's allergen, so they're never planned.`
+    : "No allergies on file, so every recipe can be planned.";
+  $("#allergen-list").innerHTML = f.known_allergens.map((a) => `<option value="${esc(a.name)}"></option>`).join("");
+  $("#allergen-help").textContent =
+    `These also catch the ingredients that carry them (dairy catches butter and parmesan, gluten catches pasta and soy sauce): ${f.known_allergens.map((a) => a.name).join(", ")}. Anything else is matched by ingredient name.`;
+  $("#family").innerHTML = f.members
+    .map(
+      (m) => `
+    <section class="card">
+      <h2>${esc(m.name)}</h2>
+      <span class="muted" style="font-size:.8rem">${m.cooks ? "Cooks" : "Eats"}${m.in_planner_toml ? " · from planner.toml" : ""}</span>
+      <div class="chips">${
+        m.allergies.length
+          ? m.allergies.map((a) => `<span class="chip">${esc(a)}<button data-person="${esc(m.name)}" data-remove-allergy="${esc(a)}" aria-label="Remove ${esc(a)}">✕</button></span>`).join("")
+          : '<span class="muted">No allergies</span>'
+      }</div>
+      <form class="inline" data-person="${esc(m.name)}">
+        <input name="allergen" list="allergen-list" required placeholder="Add an allergy (peanut, dairy…)" />
+        <button class="primary small">Add</button>
+      </form>
+      ${m.in_planner_toml ? "" : `<div class="day-actions"><button class="small ghost" data-remove-member="${esc(m.name)}">Remove ${esc(m.name)}</button></div>`}
+    </section>`
+    )
+    .join("");
+}
+$("#family").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const btn = form.querySelector("button");
+  busy(btn, async () => {
+    const r = await api(`/api/family/members/${encodeURIComponent(form.dataset.person)}/allergies`, {
+      method: "POST",
+      body: { allergen: form.allergen.value },
+    });
+    state.family = r;
+    renderFamily();
+    state.recipes = [];
+    let msg = `${r.name}: ${r.allergen}. ${r.blocked.length} recipes won't be planned.`;
+    if (r.replaced_days.length) {
+      msg += ` Replaced ${r.replaced_days.length} planned dinner${r.replaced_days.length > 1 ? "s" : ""}; send the list to Keep again.`;
+      loadWeek(state.start);
+    }
+    toast(msg, 6000);
+  });
+});
+$("#family").addEventListener("click", async (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  try {
+    if (b.dataset.removeAllergy) {
+      state.family = await api(
+        `/api/family/members/${encodeURIComponent(b.dataset.person)}/allergies/${encodeURIComponent(b.dataset.removeAllergy)}`,
+        { method: "DELETE" }
+      );
+    } else if (b.dataset.removeMember) {
+      state.family = await api(`/api/family/members/${encodeURIComponent(b.dataset.removeMember)}`, { method: "DELETE" });
+    } else return;
+    state.recipes = [];
+    renderFamily();
+  } catch (err) {
+    toast(err.message, 5000);
+  }
+});
+$("#member-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const form = e.currentTarget;
+  busy(form.querySelector("button"), async () => {
+    state.family = await api("/api/family/members", { method: "POST", body: { name: new FormData(form).get("name") } });
+    form.reset();
+    renderFamily();
+  });
+});
 
 // ── Start ────────────────────────────────────────────────────────────────────
 let initial = "week";

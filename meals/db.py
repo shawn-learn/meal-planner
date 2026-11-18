@@ -109,6 +109,21 @@ CREATE TABLE IF NOT EXISTS list_marks (
     PRIMARY KEY (week_start, item)
 );
 
+-- The family profile: everyone in the house (not only the cooks in planner.toml) and their
+-- food allergies. Dinners with an allergen are never planned (see family.py).
+CREATE TABLE IF NOT EXISTS family_members (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS family_allergies (
+    member_id INTEGER NOT NULL REFERENCES family_members(id) ON DELETE CASCADE,
+    allergen TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (member_id, allergen)
+);
+
 CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY,
     at TEXT NOT NULL DEFAULT (datetime('now')),

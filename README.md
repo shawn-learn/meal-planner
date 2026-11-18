@@ -13,6 +13,10 @@ Every week it looks at:
 - **What you like.** Rate dinners 1–5 with one tap. Ratings and swaps nudge that recipe, its
   cuisine and its protein. It also avoids repeats from the last couple of weeks and doesn't
   serve the same protein two nights running.
+- **Who's allergic to what.** The family profile lists everyone in the house (not only the
+  cooks) and their food allergies. A dinner with an allergen is never planned, whoever likes it
+  and whatever is on sale. Common allergens catch the ingredients that carry them ("dairy"
+  catches butter and parmesan, "gluten" catches pasta and soy sauce, "fish" catches fish sauce).
 
 Every pick comes with its reasons ("Chicken thigh $3.99/lb at Safeway", "A favourite (4.8★)",
 "Sam is free from 4:30 pm (after Hockey)").
@@ -59,6 +63,9 @@ run, Claude and Daily Dashboard is in [docs/SETUP.md](docs/SETUP.md).
 - **Deals.** Everything on sale this week that your recipes use, plus a form for deals the
   flyers don't show, like the Costco coupon book.
 - **Taste.** Favourites, what it has learned you like more or less of, and dinners to rate.
+- **Family.** Everyone in the house and their food allergies. Adding one re-picks any planned
+  dinner from today on that has it; recipes with an allergen are marked on the Recipes tab and
+  can't be chosen by hand.
 
 ## Commands
 
@@ -73,6 +80,9 @@ run, Claude and Daily Dashboard is in [docs/SETUP.md](docs/SETUP.md).
 | `meals import URL` | Add a recipe from a link |
 | `meals rate RECIPE_ID STARS` | Rate a recipe |
 | `meals keep-sync [--dry-run]` | Put the list on Keep |
+| `meals family` | Everyone in the family profile and their allergies |
+| `meals allergy NAME ALLERGEN [--remove]` | Add (or remove) a food allergy; adds the person if new |
+| `meals family-add NAME` / `meals family-remove NAME` | Add or remove someone |
 | `meals mcp` | MCP server for Claude (stdio) |
 | `meals demo` | The made-up household on port 8201 |
 
@@ -81,7 +91,8 @@ run, Claude and Daily Dashboard is in [docs/SETUP.md](docs/SETUP.md).
 `GET /api/week?start=`, `POST /api/week/plan`, `POST /api/days/{day}/swap|lock`,
 `POST /api/ratings`, `GET /api/ratings/pending`, `GET /api/preferences`, `GET|POST /api/recipes`,
 `POST /api/recipes/import`, `DELETE /api/recipes/{id}`, `GET|POST /api/deals`,
-`POST /api/deals/refresh`, `POST /api/keep/sync`, and **`GET /api/dashboard`**, a small, stable
+`POST /api/deals/refresh`, `POST /api/keep/sync`, `GET /api/family`,
+`POST|DELETE /api/family/members[/{name}]`, `POST|DELETE /api/family/members/{name}/allergies[/{allergen}]`, and **`GET /api/dashboard`**, a small, stable
 summary for Daily Dashboard's Meals card. Interactive docs at `/docs`.
 
 ## Layout
@@ -90,6 +101,7 @@ summary for Daily Dashboard's Meals card. Interactive docs at `/docs`.
 - `meals/schedule.py` reads calendars (secret iCal addresses) and works out free time before dinner.
 - `meals/deals.py` and `meals/sources/flipp.py` collect and match flyer deals.
 - `meals/learn.py` turns ratings and swaps into preference weights.
+- `meals/family.py` is the family profile and the allergen matching the planner enforces.
 - `meals/shopping.py` builds the list; `meals/keep.py` syncs it to Google Keep.
 - `meals/recipes.py` is the cookbook and the link importer; `meals/ingredients.py` parses lines
   like "2 lb boneless chicken thighs, trimmed".

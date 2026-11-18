@@ -80,6 +80,9 @@ class Member:
     calendars: list[str] = field(default_factory=list)
     # The most hands-on minutes this person wants to spend cooking on a weeknight.
     max_minutes: int = 60
+    # Food allergies ("peanut", "dairy", "shellfish"). Dinners with these are never planned.
+    # Also editable from the web page's Family tab, the CLI and Claude.
+    allergies: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -170,6 +173,7 @@ def load_household(path: Path) -> Household:
             cooks=bool(m.get("cooks", True)),
             calendars=[str(c) for c in m.get("calendars", [])],
             max_minutes=int(m.get("max_minutes", 60)),
+            allergies=[str(a) for a in m.get("allergies", [])],
         )
         for m in raw.get("members", [])
     ] or [Member("Me")]
