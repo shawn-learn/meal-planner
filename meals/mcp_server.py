@@ -121,7 +121,11 @@ def find_recipes(query: str = "", max_minutes: int | None = None, limit: int = 1
         if max_minutes and r["total_minutes"] > max_minutes:
             continue
         stars = f", {r['ratings']['average']:.1f}★" if r["ratings"]["count"] else ""
-        out.append(f"- [{r['id']}] {r['name']} ({r['total_minutes']} min{stars})")
+        warn = ""
+        if r["allergens"]:
+            bad = ", ".join(f"{a['allergen']} for {'/'.join(a['who'])}" for a in r["allergens"])
+            warn = f" ⚠ not planned: {bad}"
+        out.append(f"- [{r['id']}] {r['name']} ({r['total_minutes']} min{stars}){warn}")
     return "\n".join(out[:limit]) or "No recipes match."
 
 
@@ -215,6 +219,47 @@ def send_list_to_keep(dry_run: bool = False) -> str:
     if r.get("have"):
         text += f" Left off (already have): {', '.join(r['have'])}."
     return f"{text} {r['link']}"
+
+
+def _family_text(f: dict[str, Any]) -> str:
+    lines = []
+    for m in f["members"]:
+        allergies = ", ".join(m["allergies"]) or "no allergies"
+        lines.append(f"- {m['name']}: {allergies}")
+    if not lines:
+        lines.append("Nobody in the family profile yet.")
+    lines.append(f"{f['recipes_blocked']} of {f['recipes_total']} recipes are never planned.")
+    return "\n".join(lines)
+
+
+@mcp.tool()
+def family(person: str = "", add_allergy: str = "", remove_allergy: str = "") -> str:
+    """The family profile: everyone in the house and their food allergies. To record an
+    allergy pass person and add_allergy (adds the person if new); to take one off, person and
+    remove_allergy. A dinner with an allergy is never planned, and planned dinners from today
+    on that have it are replaced. Common ones (peanut, tree nuts, dairy, egg, gluten, soy,
+    fish, shellfish, sesame, mustard) also catch the ingredients that carry them ("dairy"
+    catches parmesan); anything else is matched by ingredient name."""
+    p = planner()
+    if not (add_allergy or remove_allergy):
+        return _family_text(p.family())
+    if not person:
+        return "Whose allergy? Pass person."
+    try:
+        if remove_allergy:
+            return _family_text(p.remove_allergy(person, remove_allergy))
+        r = p.add_allergy(person, add_allergy)
+    except ValueError as exc:
+        return str(exc)
+    text = f"Saved: {r['name']} is allergic to {r['allergen']}."
+    if not r["known"]:
+        text += " (Matched by ingredient name.)"
+    blocked = r["blocked"]
+    text += f" {len(blocked)} recipes now never planned"
+    text += (": " + ", ".join(blocked[:6]) + ("…" if len(blocked) > 6 else ".")) if blocked else "."
+    if r["replaced_days"]:
+        text += f" Replaced dinners on {', '.join(r['replaced_days'])}; re-send the list to Keep."
+    return text
 
 
 @mcp.tool()

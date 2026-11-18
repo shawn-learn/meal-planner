@@ -110,6 +110,16 @@ def main(argv: list[str] | None = None) -> None:
     k.add_argument("--week")
     k.add_argument("--dry-run", action="store_true")
 
+    sub.add_parser("family", help="Show everyone in the family profile and their allergies")
+    fa = sub.add_parser("family-add", help="Add someone to the family profile")
+    fa.add_argument("name")
+    fr = sub.add_parser("family-remove", help="Take someone (and their allergies) out")
+    fr.add_argument("name")
+    al = sub.add_parser("allergy", help="Add a food allergy (never planned from then on)")
+    al.add_argument("name")
+    al.add_argument("allergen", help="e.g. peanut, tree nuts, dairy, egg, gluten, shellfish")
+    al.add_argument("--remove", action="store_true", help="Remove it instead")
+
     sub.add_parser("stop", help="Stop a running `meals serve`")
     sub.add_parser("status", help="Say whether `meals serve` is running")
     sub.add_parser("mcp", help="Run the MCP server on stdio (for Claude)")
@@ -198,7 +208,7 @@ def main(argv: list[str] | None = None) -> None:
         run()
         return
 
-    from meals.mcp_server import _list_text, _week_text
+    from meals.mcp_server import _family_text, _list_text, _week_text
 
     pl = _planner()
     if a.cmd == "weekly":
@@ -232,6 +242,25 @@ def main(argv: list[str] | None = None) -> None:
         start = pl.week_for(week) if week else None
         out = pl.mark_have(a.item, not a.need, start, a.always)
         print(_list_text(out["shopping"]))
+    elif a.cmd == "family":
+        print(_family_text(pl.family()))
+    elif a.cmd == "family-add":
+        print(_family_text(pl.add_family_member(a.name)))
+    elif a.cmd in ("family-remove", "allergy"):
+        try:
+            if a.cmd == "family-remove":
+                out = pl.remove_family_member(a.name)
+            elif a.remove:
+                out = pl.remove_allergy(a.name, a.allergen)
+            else:
+                out = pl.add_allergy(a.name, a.allergen)
+                print(f"{out['name']}: {out['allergen']}. Never planned: {len(out['blocked'])}.")
+                if out["replaced_days"]:
+                    print("Replaced dinners on " + ", ".join(out["replaced_days"]) + ".")
+        except ValueError as exc:
+            print(exc)
+            sys.exit(1)
+        print(_family_text(out))
     elif a.cmd == "keep-sync":
         week = _date(a.week)
         print(

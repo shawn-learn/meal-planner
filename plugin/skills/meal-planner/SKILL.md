@@ -18,10 +18,15 @@ deals, the pantry and what the household likes, so let it decide and keep chat s
   it learns; encourage a quick rating after dinners.
 - "Add this recipe" + a link → `add_recipe_from_link`.
 - "Any deals on chicken?" → `deals` with a query; `check_flyers` only if nothing is saved this week.
+- "Riley is allergic to peanuts" / "Sam can't have dairy" → `family` with `person` and
+  `add_allergy`. It replaces affected planned dinners itself; then offer `send_list_to_keep`.
+  "Who's allergic to what?" → `family` with no arguments.
 - "Put it on the list" → `send_list_to_keep`. Use `dry_run` first if the person is unsure.
 
 ## Rules
 
+- Allergies are enforced by the planner. Never suggest a recipe that `find_recipes` marks with
+  ⚠, and don't promise a dish is safe beyond what the planner says.
 - Don't invent recipes, prices, store hours or anyone's schedule. If the tools don't know, say so.
 - Explain choices with the reasons the planner gives (deal, liked, who's free), briefly.
 - One or two tool calls per ask is normal. Don't loop over days or recipes in chat.

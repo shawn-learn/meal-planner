@@ -68,6 +68,14 @@ class HaveIn(BaseModel):
     week_start: _dt.date | None = None
 
 
+class MemberIn(BaseModel):
+    name: str
+
+
+class AllergyIn(BaseModel):
+    allergen: str
+
+
 class SyncIn(BaseModel):
     week_start: _dt.date | None = None
     dry_run: bool = False
@@ -147,6 +155,38 @@ def create_app(planner: Planner | None = None, settings: Settings | None = None)
     def retire(recipe_id: int) -> dict[str, bool]:
         p.retire_recipe(recipe_id)
         return {"ok": True}
+
+    @app.get("/api/family")
+    def family() -> dict[str, Any]:
+        return p.family()
+
+    @app.post("/api/family/members")
+    def add_member(body: MemberIn) -> dict[str, Any]:
+        try:
+            return p.add_family_member(body.name)
+        except ValueError as exc:
+            raise bad(exc) from exc
+
+    @app.delete("/api/family/members/{name}")
+    def remove_member(name: str) -> dict[str, Any]:
+        try:
+            return p.remove_family_member(name)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc)) from exc
+
+    @app.post("/api/family/members/{name}/allergies")
+    def add_allergy(name: str, body: AllergyIn) -> dict[str, Any]:
+        try:
+            return p.add_allergy(name, body.allergen)
+        except ValueError as exc:
+            raise bad(exc) from exc
+
+    @app.delete("/api/family/members/{name}/allergies/{allergen}")
+    def remove_allergy(name: str, allergen: str) -> dict[str, Any]:
+        try:
+            return p.remove_allergy(name, allergen)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc)) from exc
 
     @app.get("/api/deals")
     def deals(q: str | None = None) -> list[dict[str, Any]]:

@@ -17,6 +17,9 @@ Edit `planner.toml`:
 - **deals.stores**: Flipp merchant names, matched loosely. Run `uv run meals deals` and look at
   the Deals tab to check the names match (for example "Calgary Co-op").
 - **kitchen.pantry** and **kitchen.avoid**.
+- Food allergies: easiest on the page's **Family** tab (or `uv run meals allergy Riley peanut`,
+  or ask Claude). Anyone can be added there, not only the cooks. You can also list them under a
+  member here, as `allergies = ["peanut", "dairy"]`. A dinner with an allergen is never planned.
 
 ## 2. Calendars
 
@@ -101,7 +104,7 @@ Sunday, and puts the list on Keep. Re-plan any time from the page; kept dinners 
 ## 6. Claude
 
 The MCP server gives Claude about a dozen small tools (`get_week`, `plan_week`, `swap_dinner`,
-`rate_dinner`, `find_recipes`, `deals`, `send_list_to_keep`, …). The planner does the work, so
+`rate_dinner`, `find_recipes`, `deals`, `send_list_to_keep`, `family`, …). The planner does the work, so
 a chat stays short and on topic.
 
 **Claude Code or Cowork:** install the plugin in `plugin/` (it starts the MCP server and adds a

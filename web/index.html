@@ -21,6 +21,7 @@
       <button role="tab" data-tab="recipes">Recipes</button>
       <button role="tab" data-tab="deals">Deals</button>
       <button role="tab" data-tab="taste">Taste</button>
+      <button role="tab" data-tab="family">Family</button>
     </nav>
   </header>
 
@@ -96,6 +97,26 @@
     <!-- TASTE -->
     <section id="tab-taste" class="tab" hidden>
       <div class="taste-grid" id="taste"></div>
+    </section>
+    <!-- FAMILY -->
+    <section id="tab-family" class="tab" hidden>
+      <div class="layout">
+        <div>
+          <p class="muted" id="family-meta"></p>
+          <div class="taste-grid" id="family"></div>
+        </div>
+        <aside class="panel">
+          <h2>Add someone</h2>
+          <p class="muted">Everyone who eats here, not only the cooks. Add their food allergies and the planner never plans a dinner that has them.</p>
+          <form id="member-form" class="stack">
+            <label>Name <input name="name" required placeholder="Riley" /></label>
+            <button class="primary">Add to the family</button>
+          </form>
+          <h3 style="margin-top:18px">How allergies are matched</h3>
+          <p class="muted" id="allergen-help"></p>
+        </aside>
+      </div>
+      <datalist id="allergen-list"></datalist>
     </section>
   </main>
 

@@ -9,6 +9,8 @@ out fairly), then the recipe that scores best for that night:
 * **taste**: ratings and what it has learned you like,
 * **variety**: not the same protein twice in a row, not something you had last week.
 
+Nothing with an ingredient someone in the family is allergic to is ever planned (family.py).
+
 Every choice carries plain-language reasons, and the whole thing is ordinary code: the same
 inputs give the same plan, it costs nothing to run, and it never wanders off topic.
 """
@@ -23,8 +25,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from meals import deals as deal_mod
+from meals import family, learn
 from meals import ingredients as ing
-from meals import learn
 from meals import recipes as recipe_mod
 from meals.config import Household
 from meals.db import DB
@@ -72,6 +74,11 @@ class Context:
     shop: _dt.date = _dt.date.min
     # Once a few dinners are rated, "new" becomes worth pointing out.
     has_history: bool = False
+    # The family's allergies: a recipe with any of these is never planned.
+    allergies: list[family.Rule] = field(default_factory=list)
+
+    def safe(self, recipe: dict[str, Any]) -> bool:
+        return not family.conflicts(recipe, self.allergies)
 
 
 # ── Scoring ─────────────────────────────────────────────────────────────────────
@@ -117,7 +124,7 @@ def score_recipe(
     ctx: Context,
 ) -> tuple[float, list[Reason]] | None:
     """None when the recipe can't be made tonight."""
-    if _uses_avoided(recipe, ctx.household.avoid):
+    if _uses_avoided(recipe, ctx.household.avoid) or not ctx.safe(recipe):
         return None
     slow = bool(SLOW_TAGS & set(recipe["tags"]))
     hands_on = recipe["hands_on"]
@@ -232,6 +239,7 @@ def build_context(
         last_served=_last_served(db, start),
         rng=random.Random(start.toordinal()),
         has_history=bool(db.one("SELECT 1 AS x FROM ratings LIMIT 1 OFFSET 4")),
+        allergies=family.rules(db, household),
     )
 
 
@@ -283,13 +291,20 @@ def choose(
         result = score_recipe(r, day, max(minutes, TIGHT_MINUTES), week, ctx)
         if result:
             scored.append((result[0], r, result[1]))
-    if not scored:  # nothing fits: the quickest thing there is
+    if not scored:  # nothing fits: the quickest thing there is that's safe for everyone
         quick = sorted(
-            (r for r in candidates if not (exclude and r["id"] in exclude)),
+            (
+                r
+                for r in candidates
+                if not (exclude and r["id"] in exclude)
+                and ctx.safe(r)
+                and not _uses_avoided(r, household.avoid)
+            ),
             key=lambda r: r["hands_on"],
         )
         if not quick:
-            return Choice(day, "skip", reasons=[Reason("note", "No recipes yet")])
+            why = "No recipes yet" if not candidates else "No recipe is safe for everyone"
+            return Choice(day, "skip", reasons=[Reason("note", why)])
         scored = [(0.0, quick[0], [Reason("time", "Tight night, so the quickest option")])]
     scored.sort(key=lambda s: (-s[0], s[1]["name"]))
     best_score, recipe, reasons = scored[0]
@@ -340,7 +355,8 @@ def plan_week(
     for i in range(7):
         day = start + _dt.timedelta(days=i)
         old = existing.get(day)
-        if old and old.locked:
+        # A kept dinner stays, unless someone turned out to be allergic to it.
+        if old and old.locked and not (old.recipe and not ctx.safe(old.recipe)):
             week.append(old)
             if old.cook:
                 counts[old.cook] += 1
@@ -371,6 +387,10 @@ def swap(
         recipe = recipe_mod.get(db, recipe_id)
         if recipe is None:
             raise ValueError("No such recipe.")
+        bad = family.conflicts(recipe, ctx.allergies)
+        if bad:
+            has = "; ".join(c.text for c in bad)
+            raise ValueError(f"{recipe['name']} has {has}, so it can't be planned.")
         new = Choice(
             day,
             "cook",
@@ -390,6 +410,34 @@ def swap(
     save_week(db, start, sorted(others + [new], key=lambda c: c.day))
     db.log("swap", day=day.isoformat())
     return new
+
+
+def replace_unsafe(
+    db: DB,
+    household: Household,
+    start: _dt.date,
+    evenings: dict[_dt.date, list[Evening]],
+    today: _dt.date,
+) -> list[_dt.date]:
+    """After an allergy is added: re-pick every dinner from today on that has it, kept or not.
+    Returns the days that changed."""
+    week = load_choices(db, start)
+    ctx = build_context(db, household, start, today)
+    changed: list[_dt.date] = []
+    candidates = recipe_mod.list_all(db)
+    for i, c in enumerate(week):
+        if c.day < today or c.kind == "skip" or not c.recipe or ctx.safe(c.recipe):
+            continue
+        others = [x for x in week if x.day != c.day]
+        counts: Counter[str] = Counter(x.cook for x in others if x.cook)
+        week[i] = choose(c.day, evenings.get(c.day, []), candidates, others, counts, ctx)
+        week[i].reasons.insert(0, Reason("note", f"Replaced {c.recipe['name']} (allergy)"))
+        week[i].reasons = week[i].reasons[:4]
+        changed.append(c.day)
+    if changed:
+        save_week(db, start, week)
+        db.log("allergy-replan", days=[d.isoformat() for d in changed])
+    return changed
 
 
 def set_locked(db: DB, start: _dt.date, day: _dt.date, locked: bool) -> None:

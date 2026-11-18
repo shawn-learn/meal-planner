@@ -19,6 +19,10 @@ name = "Partner"
 cooks = true
 max_minutes = 45
 calendars = []
+# Food allergies: dinners with these are never planned. "dairy", "gluten", "egg", "peanut",
+# "tree nuts", "soy", "fish", "shellfish", "sesame" and "mustard" also catch the ingredients
+# that carry them. Easier to manage on the page's Family tab, where kids can be added too.
+allergies = []
 
 [dinner]
 time = "18:00"          # when dinner is on the table
